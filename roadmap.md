@@ -21,7 +21,7 @@
 - [x] הקמת פרויקט Next.js (App Router, TypeScript strict) + Tailwind + תמיכת RTL *(shadcn/ui — צעד הבא)*
 - [x] הגדרת ESLint + Prettier, מבנה תיקיות feature-based (ראה CLAUDE.md)
 - [x] חיבור Supabase (project, env vars, client) — `.env` ב-gitignore מיד
-- [ ] הפרדת שני האזורים: routing/subdomain ל-`admin` מול `app`, layouts נפרדים
+- [x] הפרדת שני האזורים: routing/subdomain ל-`admin` מול `app`, layouts נפרדים
 - [x] סכמת DB ראשונית: `clubs`, `seasons`, `platform_users`, `users`, `roles`, `permissions`, `role_permissions` *(+audit_logs)*
 - [x] הפעלת RLS על כל טבלה + policies מבוססות `club_id` (JWT claim)
 - [x] בדיקת בידוד: ודא שמשתמש ממועדון א' לא רואה נתוני ב' (בדיקה אוטומטית) — `supabase/tests/rls_isolation.sql`

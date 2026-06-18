@@ -1,18 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, type NextResponse } from "next/server";
 
 import { env } from "@/lib/env";
 
 /**
- * מרענן את סשן ה-Supabase בכל בקשה ומסנכרן את ה-cookies.
- * חובה: אל תכניס לוגיקה בין יצירת ה-client ל-getUser (סיכון להתנתקויות אקראיות).
- * ניתוב לפי אזור (admin מול app) והגנת auth ייבנו מעל זה בשלב הבא.
+ * מרענן את סשן ה-Supabase ומסנכרן cookies על ה-response שכבר נקבע
+ * (next או rewrite). אל תכניס לוגיקה בין יצירת ה-client ל-getUser.
  */
-export async function updateSession(
+export async function refreshSession(
   request: NextRequest,
-): Promise<NextResponse> {
-  let supabaseResponse = NextResponse.next({ request });
-
+  response: NextResponse,
+): Promise<void> {
   const supabase = createServerClient(
     env.supabaseUrl,
     env.supabasePublishableKey,
@@ -25,9 +23,8 @@ export async function updateSession(
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
-          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, options);
+            response.cookies.set(name, value, options);
           });
         },
       },
@@ -36,6 +33,4 @@ export async function updateSession(
 
   // רענון הטוקן — חייב לרוץ כדי לשמור את הסשן חי.
   await supabase.auth.getUser();
-
-  return supabaseResponse;
 }
