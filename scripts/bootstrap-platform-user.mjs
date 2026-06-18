@@ -36,12 +36,15 @@ async function main() {
   loadEnvLocal();
   const [email, password, fullName = null] = process.argv.slice(2);
   if (!email || !password) {
-    throw new Error("usage: node scripts/bootstrap-platform-user.mjs <email> <password> [full_name]");
+    throw new Error(
+      "usage: node scripts/bootstrap-platform-user.mjs <email> <password> [full_name]",
+    );
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const secret = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !secret) throw new Error("missing NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SECRET_KEY");
+  if (!url || !secret)
+    throw new Error("missing NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SECRET_KEY");
 
   const user = await postJson(`${url}/auth/v1/admin/users`, secret, {
     email,

@@ -6,6 +6,14 @@
 
 ### 2026-06-18
 
+- **`feat(clubs): tenant provisioning`** — RPC טרנזקציוני `provision_club`
+  (SECURITY DEFINER + בדיקת is_platform, default-deny) שמקים club + role "מנהל
+  מועדון" עם כל ההרשאות + משתמש מנהל + עונה פעילה + audit; admin helpers (REST,
+  server-only) ליצירת/מחיקת משתמש אימות; feature `clubs` (provisioning/queries/
+  actions/UI) — רשימת מועדונים וטופס יצירה ב-Control Plane. בדיקה: happy path +
+  חסימת משתמש שאינו פלטפורמה (עוברת).
+- **`docs: features/ README + CHANGELOG`** (`a11cddc`) — תיעוד מוסכמת ה-features
+  ויומן השינויים.
 - **`feat(control-plane): platform auth`** (`ff1ab68`) — feature `platform-auth`:
   `getPlatformUser`/`requirePlatformUser` (default-deny), server actions
   `signIn`/`signOut` עם ולידציית Zod, עמוד login ודף מוגן. סקריפט bootstrap
