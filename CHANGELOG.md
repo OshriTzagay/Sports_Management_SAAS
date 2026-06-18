@@ -1,0 +1,26 @@
+# CHANGELOG
+
+יומן שינויים — רשומה לכל commit (החדש למעלה). תאריכים מוחלטים.
+
+## Phase 0 — תשתית
+
+### 2026-06-18
+
+- **`feat(control-plane): platform auth`** (`ff1ab68`) — feature `platform-auth`:
+  `getPlatformUser`/`requirePlatformUser` (default-deny), server actions
+  `signIn`/`signOut` עם ולידציית Zod, עמוד login ודף מוגן. סקריפט bootstrap
+  למשתמש הפלטפורמה הראשון. אומת: login + RLS read מקצה לקצה.
+- **`feat: subdomain-based area separation`** (`4718e64`) — `resolveArea()` +
+  middleware שעושה rewrite לפי subdomain (admin.* / app.*) ומרענן סשן; layouts
+  נפרדים ל-(control-plane) ו-(tenant); נחיתה ניטרלית. אומת חי בשלושה hosts.
+- **`chore: track .env.local.example`** (`91c86de`) — תיקון כלל ignore כדי לעקוב
+  אחרי קובץ הדוגמה (ללא הסוד עצמו).
+- **`feat(db): Supabase wiring + Phase 0 schema`** (`12443bc`) — env validation +
+  helpers (server/client/middleware); מיגרציות: platform_users, clubs, seasons,
+  RBAC, audit_logs; RLS על כל הטבלאות לפי JWT club_id (default-deny); בדיקת בידוד
+  עוברת.
+- **`feat(ui): design-system primitives`** (`e2b415f`) — design tokens כ-CSS
+  variables (brand ניתן לדריסה בזמן ריצה) + רכיבי Button/Input/Card/Badge
+  מותאמים ל-design-system ו-RTL.
+- **`chore: scaffold Next.js app`** (`3c349ac`) — Next.js 16 (App Router, TS
+  strict), Tailwind v4, ESLint/Prettier, RTL + Heebo, מבנה feature-based.
