@@ -6,6 +6,9 @@
 
 ### 2026-06-18
 
+- **`feat(clubs): suspend/activate club`** — RPC `set_club_status` (SECURITY
+  DEFINER, platform-only, audit על השינוי) + כפתור השעיה/הפעלה ברשימת המועדונים.
+  בדיקה: עדכון+audit + חסימת משתמש שאינו פלטפורמה (עוברת). **סוף Phase 0.**
 - **`feat(clubs): tenant provisioning`** — RPC טרנזקציוני `provision_club`
   (SECURITY DEFINER + בדיקת is_platform, default-deny) שמקים club + role "מנהל
   מועדון" עם כל ההרשאות + משתמש מנהל + עונה פעילה + audit; admin helpers (REST,

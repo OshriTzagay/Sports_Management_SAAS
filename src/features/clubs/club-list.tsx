@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ClubStatusToggle } from "./club-status-toggle";
 import type { Club } from "./types";
 
 const STATUS: Record<
@@ -24,9 +25,12 @@ export function ClubList({ clubs }: { clubs: Club[] }) {
             <p className="text-text-primary font-medium">{club.name}</p>
             <p className="text-text-muted text-xs">{club.slug}</p>
           </div>
-          <Badge variant={STATUS[club.status].variant}>
-            {STATUS[club.status].label}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge variant={STATUS[club.status].variant}>
+              {STATUS[club.status].label}
+            </Badge>
+            <ClubStatusToggle clubId={club.id} status={club.status} />
+          </div>
         </Card>
       ))}
     </ul>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requirePlatformUser } from "@/features/platform-auth";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { provisionClub } from "./provisioning";
 
 const schema = z.object({
@@ -62,4 +63,29 @@ export async function createClubAction(
       error: err instanceof Error ? err.message : "הקמת המועדון נכשלה",
     };
   }
+}
+
+const statusSchema = z.object({
+  clubId: z.string().uuid(),
+  status: z.enum(["trial", "active", "suspended"]),
+});
+
+/** השעיה/הפעלה של מועדון. authorization מפורש + audit (ב-RPC). */
+export async function setClubStatusAction(formData: FormData): Promise<void> {
+  await requirePlatformUser();
+
+  const parsed = statusSchema.safeParse({
+    clubId: formData.get("clubId"),
+    status: formData.get("status"),
+  });
+  if (!parsed.success) throw new Error("קלט לא תקין");
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.rpc("set_club_status", {
+    p_club_id: parsed.data.clubId,
+    p_status: parsed.data.status,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/control-plane");
 }

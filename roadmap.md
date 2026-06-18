@@ -28,15 +28,13 @@
 - [ ] שכבת authorization (default-deny) — middleware שבודק permissions *(session refresh קיים; permission check בהמשך)*
 - [x] תשתית: audit_log, soft-delete (deleted_at) ✓ · generated types — *נדחה (דורש Docker או access token)*
 - [ ] גיבויים אוטומטיים מופעלים ב-Supabase
-- [ ] **Observability:** logging מובנה (structured), error tracking (Sentry), uptime/health checks
-- [ ] **Alerting:** התראות על שגיאות 5xx, כשלי webhook, כשלי תשלום, ירידת זמינות
-- [ ] **Rate limiting:** הגבלת קצב על endpoints רגישים (login, OTP, payment, webhook) — הגנה מ-brute-force ו-abuse
+- [~] **Observability / Alerting / Rate-limiting** — *נדחה ל-Phase מאוחר (דורש חשבונות חיצוניים: Sentry/uptime). כולל: structured logging, error tracking, health checks, התראות על 5xx/webhook/תשלום, ו-rate limiting על endpoints רגישים.*
 
 **Control Plane (האזור שלך — `admin`):**
-- [ ] Auth נפרד ל-`platform_users` (login משלך, מנותק מ-auth של המועדונים)
-- [ ] יצירת מועדון (tenant provisioning): מקים `club` + Club Admin ראשון + עונה ריקה
-- [ ] רשימת מועדונים: סטטוס, תאריך הקמה, מספר משתמשים (מטריקה מצרפית בלבד)
-- [ ] עריכת/השעיית מועדון
+- [x] Auth נפרד ל-`platform_users` (login משלך, מנותק מ-auth של המועדונים)
+- [x] יצירת מועדון (tenant provisioning): מקים `club` + Club Admin ראשון + עונה ריקה
+- [x] רשימת מועדונים: סטטוס, תאריך הקמה *(מספר משתמשים — בהמשך)*
+- [x] עריכת/השעיית מועדון
 
 ## Phase 1 — ליבה תפעולית (Tenant Plane — `app`)
 
