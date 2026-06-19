@@ -1,4 +1,11 @@
-import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { TeamDeleteButton } from "./team-delete-button";
 import type { Team } from "./types";
 
@@ -8,18 +15,29 @@ export function TeamList({ teams }: { teams: Team[] }) {
   }
 
   return (
-    <ul className="flex flex-col gap-2">
-      {teams.map((team) => (
-        <Card key={team.id} className="flex items-center justify-between p-4">
-          <div>
-            <p className="text-text-primary font-medium">{team.name}</p>
-            {team.age_category && (
-              <p className="text-text-muted text-xs">{team.age_category}</p>
-            )}
-          </div>
-          <TeamDeleteButton teamId={team.id} />
-        </Card>
-      ))}
-    </ul>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>קבוצה</TableHead>
+          <TableHead>קטגוריית גיל</TableHead>
+          <TableHead className="text-end">פעולות</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {teams.map((team) => (
+          <TableRow key={team.id}>
+            <TableCell className="text-text-primary font-medium">
+              {team.name}
+            </TableCell>
+            <TableCell className="text-text-muted">
+              {team.age_category ?? "—"}
+            </TableCell>
+            <TableCell className="text-end">
+              <TeamDeleteButton teamId={team.id} />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

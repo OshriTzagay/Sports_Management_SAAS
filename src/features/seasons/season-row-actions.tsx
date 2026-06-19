@@ -6,7 +6,7 @@ import type { Season } from "./types";
 
 export function SeasonRowActions({ season }: { season: Season }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center justify-end gap-2">
       {!season.is_active && season.status === "active" && (
         <form action={activateSeasonAction}>
           <input type="hidden" name="seasonId" value={season.id} />

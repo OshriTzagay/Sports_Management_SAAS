@@ -6,6 +6,10 @@
 
 ### 2026-06-19
 
+- **`feat(ui): CMS shell — sidebar nav + data tables`** — מעטפת CMS לאזור
+  המועדון: סייד-בר ניווט (RTL, אייקוני lucide, קישור פעיל, עונה פעילה, משתמש+
+  התנתקות) ב-route group `(app)` עם שער כניסה מרוכז; רכיב `Table` מקצועי; המרת
+  הרשימות (עונות, קבוצות, מועדונים) לטבלאות.
 - **`feat(teams): teams per season`** — טבלת `teams` (scope club_id+season_id,
   RLS, unique שם-לעונה); feature `teams` (listTeams, create/soft-delete actions);
   UI בעונה הפעילה + nav. בדיקת בידוד teams (קריאה+כתיבה) עוברת.

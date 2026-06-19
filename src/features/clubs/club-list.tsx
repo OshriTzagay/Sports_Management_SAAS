@@ -1,5 +1,12 @@
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ClubStatusToggle } from "./club-status-toggle";
 import type { Club } from "./types";
 
@@ -18,21 +25,33 @@ export function ClubList({ clubs }: { clubs: Club[] }) {
   }
 
   return (
-    <ul className="flex flex-col gap-2">
-      {clubs.map((club) => (
-        <Card key={club.id} className="flex items-center justify-between p-4">
-          <div>
-            <p className="text-text-primary font-medium">{club.name}</p>
-            <p className="text-text-muted text-xs">{club.slug}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant={STATUS[club.status].variant}>
-              {STATUS[club.status].label}
-            </Badge>
-            <ClubStatusToggle clubId={club.id} status={club.status} />
-          </div>
-        </Card>
-      ))}
-    </ul>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>מועדון</TableHead>
+          <TableHead>מזהה</TableHead>
+          <TableHead>סטטוס</TableHead>
+          <TableHead className="text-end">פעולות</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {clubs.map((club) => (
+          <TableRow key={club.id}>
+            <TableCell className="text-text-primary font-medium">
+              {club.name}
+            </TableCell>
+            <TableCell className="text-text-muted">{club.slug}</TableCell>
+            <TableCell>
+              <Badge variant={STATUS[club.status].variant}>
+                {STATUS[club.status].label}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-end">
+              <ClubStatusToggle clubId={club.id} status={club.status} />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

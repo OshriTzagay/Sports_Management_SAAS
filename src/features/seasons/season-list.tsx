@@ -1,14 +1,17 @@
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { SeasonRowActions } from "./season-row-actions";
 import type { Season } from "./types";
 
-function formatRange(
-  startsOn: string | null,
-  endsOn: string | null,
-): string | null {
-  if (!startsOn && !endsOn) return null;
+function formatRange(startsOn: string | null, endsOn: string | null): string {
+  if (!startsOn && !endsOn) return "—";
   const fmt = (d: string) => new Date(d).toLocaleDateString("he-IL");
   return [startsOn && fmt(startsOn), endsOn && fmt(endsOn)]
     .filter(Boolean)
@@ -27,29 +30,33 @@ export function SeasonList({ seasons }: { seasons: Season[] }) {
   }
 
   return (
-    <ul className="flex flex-col gap-2">
-      {seasons.map((season) => {
-        const range = formatRange(season.starts_on, season.ends_on);
-        return (
-          <Card
-            key={season.id}
-            className={cn(
-              "flex items-center justify-between p-4",
-              season.is_active && "border-primary-300 bg-primary-50/40",
-              season.status === "closed" && "opacity-70",
-            )}
-          >
-            <div className="flex items-center gap-3">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>עונה</TableHead>
+          <TableHead>תאריכים</TableHead>
+          <TableHead>סטטוס</TableHead>
+          <TableHead className="text-end">פעולות</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {seasons.map((season) => (
+          <TableRow key={season.id}>
+            <TableCell className="text-text-primary font-medium">
+              {season.name}
+            </TableCell>
+            <TableCell className="text-text-muted">
+              {formatRange(season.starts_on, season.ends_on)}
+            </TableCell>
+            <TableCell>
               <StatusBadge season={season} />
-              <div>
-                <p className="text-text-primary font-medium">{season.name}</p>
-                {range && <p className="text-text-muted text-xs">{range}</p>}
-              </div>
-            </div>
-            <SeasonRowActions season={season} />
-          </Card>
-        );
-      })}
-    </ul>
+            </TableCell>
+            <TableCell className="text-end">
+              <SeasonRowActions season={season} />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
