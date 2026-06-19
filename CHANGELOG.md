@@ -6,6 +6,10 @@
 
 ### 2026-06-19
 
+- **`feat(seasons): seasons CRUD + activation`** — feature `seasons`: רשימה,
+  יצירה, הפעלה (RPC `set_active_season` — עונה פעילה אחת למועדון), סגירה
+  (read-only). פילטר עונה פעילה (`getActiveSeason`). UI באזור המועדון + nav.
+  בדיקה: החלפת עונה פעילה + בידוד בין מועדונים (עוברת).
 - **`feat(tenant): tenant auth`** — feature `tenant-auth`: `getCurrentUser`/
   `requireUser` (קורא club_id מה-claim, default-deny), server actions signIn/
   signOut, עמוד login ודף בית מוגן לאזור המועדון. אומת מקצה לקצה: provisioning
