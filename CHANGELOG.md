@@ -6,6 +6,9 @@
 
 ### 2026-06-19
 
+- **`feat(teams): teams per season`** — טבלת `teams` (scope club_id+season_id,
+  RLS, unique שם-לעונה); feature `teams` (listTeams, create/soft-delete actions);
+  UI בעונה הפעילה + nav. בדיקת בידוד teams (קריאה+כתיבה) עוברת.
 - **`feat(ui): season status clarity + dialog`** — רכיב `Dialog` נגיש (מבוסס
   `<dialog>` נייטיב); דיאלוג הסבר "מה זה פעילה/סגורה"; תצוגת עונה ברורה יותר
   (הדגשת העונה הפעילה, סטטוס "לא פעילה", תאריכים).

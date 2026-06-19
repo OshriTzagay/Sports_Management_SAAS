@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 const NAV = [
   { href: "/", label: "בית" },
   { href: "/seasons", label: "עונות" },
+  { href: "/teams", label: "קבוצות" },
 ];
 
 /** Layout של Tenant Plane (app) — האזור של המועדון. branding בהמשך. */
