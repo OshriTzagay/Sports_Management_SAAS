@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarDays,
+  ClipboardList,
   LayoutDashboard,
   LogOut,
   UserRound,
@@ -25,6 +26,7 @@ const NAV: NavItem[] = [
   { href: "/seasons", label: "עונות", icon: CalendarDays },
   { href: "/teams", label: "קבוצות", icon: Users },
   { href: "/players", label: "שחקנים", icon: UserRound },
+  { href: "/coaches", label: "מאמנים", icon: ClipboardList },
 ];
 
 function isActive(pathname: string, href: string): boolean {

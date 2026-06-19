@@ -6,6 +6,10 @@
 
 ### 2026-06-19
 
+- **`feat(coaches): coach identity`** — טבלת `coaches` (זהות, scope club_id,
+  הסמכות + תוקף רישיון); feature `coaches` (listCoaches, create + שינוי סטטוס);
+  טבלה ב-CMS עם הדגשת רישיון שפג תוקף + nav. בדיקת בידוד עוברת. *(שיוך עונתי
+  לקבוצה — הבא)*
 - **`feat(players): season team assignment`** — טבלת `team_players` (שיוך עונתי
   club_id+season_id, שיבוץ יחיד לשחקן בעונה); שיבוץ/הסרה ממסך השחקנים בעונה
   הפעילה (select). משלים את מודל זהות↔שיוך. בדיקה: שיבוץ יחיד + בידוד (עוברת).
