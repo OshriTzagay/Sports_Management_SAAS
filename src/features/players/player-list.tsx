@@ -6,14 +6,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Team } from "@/features/teams";
 import { PlayerStatusControl } from "./player-status-control";
+import { TeamAssignmentControl } from "./team-assignment-control";
 import type { Player } from "./types";
 
 function formatDate(value: string | null): string {
   return value ? new Date(value).toLocaleDateString("he-IL") : "—";
 }
 
-export function PlayerList({ players }: { players: Player[] }) {
+interface PlayerListProps {
+  players: Player[];
+  /** עונה פעילה לשיבוץ; null = אין עונה פעילה (השיבוץ מושבת). */
+  seasonId: string | null;
+  teams: Team[];
+  teamByPlayer: Record<string, string>;
+}
+
+export function PlayerList({
+  players,
+  seasonId,
+  teams,
+  teamByPlayer,
+}: PlayerListProps) {
   if (players.length === 0) {
     return <p className="text-text-muted text-sm">עדיין אין שחקנים.</p>;
   }
@@ -25,6 +40,7 @@ export function PlayerList({ players }: { players: Player[] }) {
           <TableHead>שם</TableHead>
           <TableHead>ת.ז.</TableHead>
           <TableHead>תאריך לידה</TableHead>
+          <TableHead>קבוצה</TableHead>
           <TableHead className="text-end">סטטוס</TableHead>
         </TableRow>
       </TableHeader>
@@ -39,6 +55,18 @@ export function PlayerList({ players }: { players: Player[] }) {
             </TableCell>
             <TableCell className="text-text-muted">
               {formatDate(player.birth_date)}
+            </TableCell>
+            <TableCell>
+              {seasonId ? (
+                <TeamAssignmentControl
+                  playerId={player.id}
+                  seasonId={seasonId}
+                  currentTeamId={teamByPlayer[player.id] ?? null}
+                  teams={teams}
+                />
+              ) : (
+                <span className="text-text-muted">—</span>
+              )}
             </TableCell>
             <TableCell className="text-end">
               <div className="flex justify-end">

@@ -6,6 +6,9 @@
 
 ### 2026-06-19
 
+- **`feat(players): season team assignment`** — טבלת `team_players` (שיוך עונתי
+  club_id+season_id, שיבוץ יחיד לשחקן בעונה); שיבוץ/הסרה ממסך השחקנים בעונה
+  הפעילה (select). משלים את מודל זהות↔שיוך. בדיקה: שיבוץ יחיד + בידוד (עוברת).
 - **`feat(players): player identity + statuses`** — טבלת `players` (זהות קבועה,
   scope club_id, ת.ז. ייחודי למועדון); feature `players` (listPlayers, create +
   שינוי סטטוס פעיל/לא-פעיל/עזב — "עזב"=סטטוס ולא מחיקה); טבלה ב-CMS + nav. בדיקת
