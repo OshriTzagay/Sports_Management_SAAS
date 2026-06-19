@@ -2,6 +2,15 @@
 
 יומן שינויים — רשומה לכל commit (החדש למעלה). תאריכים מוחלטים.
 
+## Phase 1 — ליבה תפעולית (Tenant)
+
+### 2026-06-19
+
+- **`feat(tenant): tenant auth`** — feature `tenant-auth`: `getCurrentUser`/
+  `requireUser` (קורא club_id מה-claim, default-deny), server actions signIn/
+  signOut, עמוד login ודף בית מוגן לאזור המועדון. אומת מקצה לקצה: provisioning
+  דרך RPC → tenant login עם claim תואם → RLS מבודד למועדון. נזרע מועדון דמו.
+
 ## Phase 0 — תשתית
 
 ### 2026-06-18
