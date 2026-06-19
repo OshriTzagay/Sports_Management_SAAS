@@ -6,6 +6,9 @@
 
 ### 2026-06-19
 
+- **`feat(ui): season status clarity + dialog`** — רכיב `Dialog` נגיש (מבוסס
+  `<dialog>` נייטיב); דיאלוג הסבר "מה זה פעילה/סגורה"; תצוגת עונה ברורה יותר
+  (הדגשת העונה הפעילה, סטטוס "לא פעילה", תאריכים).
 - **`feat(seasons): seasons CRUD + activation`** — feature `seasons`: רשימה,
   יצירה, הפעלה (RPC `set_active_season` — עונה פעילה אחת למועדון), סגירה
   (read-only). פילטר עונה פעילה (`getActiveSeason`). UI באזור המועדון + nav.
