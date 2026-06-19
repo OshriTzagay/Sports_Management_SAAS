@@ -77,3 +77,52 @@ export async function setCoachStatusAction(formData: FormData): Promise<void> {
 
   revalidatePath("/coaches");
 }
+
+/** שיוך מאמן לקבוצה בעונה עם תפקיד. */
+export async function addCoachAssignmentAction(
+  formData: FormData,
+): Promise<void> {
+  const user = await requireUser();
+  const parsed = z
+    .object({
+      coachId: z.string().uuid(),
+      teamId: z.string().uuid(),
+      seasonId: z.string().uuid(),
+      role: z.enum(["head", "assistant", "goalkeeping"]),
+    })
+    .parse({
+      coachId: formData.get("coachId"),
+      teamId: formData.get("teamId"),
+      seasonId: formData.get("seasonId"),
+      role: formData.get("role"),
+    });
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.from("team_coaches").insert({
+    club_id: user.club_id,
+    season_id: parsed.seasonId,
+    team_id: parsed.teamId,
+    coach_id: parsed.coachId,
+    role: parsed.role,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/coaches");
+}
+
+/** הסרת שיוך מאמן↔קבוצה (soft-delete). */
+export async function removeCoachAssignmentAction(
+  formData: FormData,
+): Promise<void> {
+  await requireUser();
+  const assignmentId = z.string().uuid().parse(formData.get("assignmentId"));
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("team_coaches")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", assignmentId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/coaches");
+}

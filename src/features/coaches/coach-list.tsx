@@ -7,8 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Team } from "@/features/teams";
 import { CoachStatusControl } from "./coach-status-control";
-import type { Coach } from "./types";
+import { CoachTeamAssignments } from "./coach-team-assignments";
+import type { Coach, CoachAssignment } from "./types";
 
 function LicenseCell({ expiry }: { expiry: string | null }) {
   if (!expiry) return <span className="text-text-muted">—</span>;
@@ -21,7 +23,19 @@ function LicenseCell({ expiry }: { expiry: string | null }) {
   );
 }
 
-export function CoachList({ coaches }: { coaches: Coach[] }) {
+interface CoachListProps {
+  coaches: Coach[];
+  seasonId: string | null;
+  teams: Team[];
+  assignmentsByCoach: Record<string, CoachAssignment[]>;
+}
+
+export function CoachList({
+  coaches,
+  seasonId,
+  teams,
+  assignmentsByCoach,
+}: CoachListProps) {
   if (coaches.length === 0) {
     return <p className="text-text-muted text-sm">עדיין אין מאמנים.</p>;
   }
@@ -32,8 +46,8 @@ export function CoachList({ coaches }: { coaches: Coach[] }) {
         <TableRow>
           <TableHead>שם</TableHead>
           <TableHead>טלפון</TableHead>
-          <TableHead>הסמכה</TableHead>
           <TableHead>תוקף רישיון</TableHead>
+          <TableHead>קבוצות (עונה)</TableHead>
           <TableHead className="text-end">סטטוס</TableHead>
         </TableRow>
       </TableHeader>
@@ -46,11 +60,20 @@ export function CoachList({ coaches }: { coaches: Coach[] }) {
             <TableCell className="text-text-muted">
               {coach.phone ?? "—"}
             </TableCell>
-            <TableCell className="text-text-muted">
-              {coach.certification ?? "—"}
-            </TableCell>
             <TableCell>
               <LicenseCell expiry={coach.license_expiry} />
+            </TableCell>
+            <TableCell>
+              {seasonId ? (
+                <CoachTeamAssignments
+                  coachId={coach.id}
+                  seasonId={seasonId}
+                  teams={teams}
+                  assignments={assignmentsByCoach[coach.id] ?? []}
+                />
+              ) : (
+                <span className="text-text-muted">—</span>
+              )}
             </TableCell>
             <TableCell className="text-end">
               <div className="flex justify-end">
