@@ -6,6 +6,7 @@ import {
   CalendarDays,
   LayoutDashboard,
   LogOut,
+  UserRound,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const NAV: NavItem[] = [
   { href: "/", label: "בית", icon: LayoutDashboard },
   { href: "/seasons", label: "עונות", icon: CalendarDays },
   { href: "/teams", label: "קבוצות", icon: Users },
+  { href: "/players", label: "שחקנים", icon: UserRound },
 ];
 
 function isActive(pathname: string, href: string): boolean {

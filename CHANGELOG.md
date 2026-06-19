@@ -6,6 +6,10 @@
 
 ### 2026-06-19
 
+- **`feat(players): player identity + statuses`** — טבלת `players` (זהות קבועה,
+  scope club_id, ת.ז. ייחודי למועדון); feature `players` (listPlayers, create +
+  שינוי סטטוס פעיל/לא-פעיל/עזב — "עזב"=סטטוס ולא מחיקה); טבלה ב-CMS + nav. בדיקת
+  בידוד players (קריאה+כתיבה) עוברת. *(שיבוץ לקבוצה בעונה — הבא)*
 - **`feat(ui): CMS shell — sidebar nav + data tables`** — מעטפת CMS לאזור
   המועדון: סייד-בר ניווט (RTL, אייקוני lucide, קישור פעיל, עונה פעילה, משתמש+
   התנתקות) ב-route group `(app)` עם שער כניסה מרוכז; רכיב `Table` מקצועי; המרת
