@@ -6,6 +6,9 @@
 
 ### 2026-06-19
 
+- **`feat(dashboard): club metrics`** — feature `dashboard` עם מטריקות מצרפיות
+  (count יעיל ב-head) + רכיב `MetricCard` (design-system); עמוד הבית של המועדון
+  הפך לדשבורד: שחקנים פעילים, קבוצות בעונה, מאמנים פעילים, שחקנים ללא שיבוץ.
 - **`feat(seasons): season rollover`** — RPC `rollover_season` (SECURITY DEFINER,
   club-scoped) שמעתיק קבוצות + שיבוצי שחקנים פעילים + שיוכי מאמנים פעילים מעונת
   מקור לעונת יעד ריקה (מיפוי לפי שם קבוצה). אופציה "העתקת מבנה מעונה" בטופס יצירת
