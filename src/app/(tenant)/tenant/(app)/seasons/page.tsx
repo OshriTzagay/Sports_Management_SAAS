@@ -21,7 +21,7 @@ export default async function SeasonsPage() {
           <CardTitle className="text-base">הוספת עונה</CardTitle>
         </CardHeader>
         <CardContent>
-          <CreateSeasonForm />
+          <CreateSeasonForm seasons={seasons} />
         </CardContent>
       </Card>
     </div>
