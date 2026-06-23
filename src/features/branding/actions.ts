@@ -49,3 +49,43 @@ export async function updateBrandingAction(
   revalidatePath("/", "layout");
   return { error: null, ok: true };
 }
+
+const MAX_LOGO_BYTES = 1024 * 1024;
+const ALLOWED_LOGO_TYPES: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+};
+
+export type UploadLogoState = { error: string | null; ok?: boolean };
+
+/** העלאת לוגו מועדון ל-Storage (PNG/JPG בלבד, עד 1MB). */
+export async function uploadLogoAction(
+  _prev: UploadLogoState,
+  formData: FormData,
+): Promise<UploadLogoState> {
+  const user = await requireUser();
+
+  const file = formData.get("logo");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "לא נבחר קובץ" };
+  }
+  const ext = ALLOWED_LOGO_TYPES[file.type];
+  if (!ext) return { error: "רק PNG או JPG" };
+  if (file.size > MAX_LOGO_BYTES) return { error: "הקובץ גדול מ-1MB" };
+
+  const path = `${user.club_id}/logo.${ext}`;
+  const supabase = await createServerSupabaseClient();
+
+  const { error: uploadError } = await supabase.storage
+    .from("club-logos")
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (uploadError) return { error: uploadError.message };
+
+  const { error: saveError } = await supabase
+    .from("club_branding")
+    .upsert({ club_id: user.club_id, logo_path: path });
+  if (saveError) return { error: saveError.message };
+
+  revalidatePath("/", "layout");
+  return { error: null, ok: true };
+}

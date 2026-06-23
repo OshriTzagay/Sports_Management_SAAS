@@ -6,6 +6,10 @@
 
 ### 2026-06-19
 
+- **`feat(branding): logo upload + designed settings + apply loader`** — Supabase
+  Storage (bucket ציבורי + RLS לפי תיקיית מועדון, PNG/JPG עד 1MB); עמוד הגדרות
+  מעוצב: העלאת לוגו עם תצוגה, swatches + color-picker + תצוגה מקדימה חיה, בורר
+  ערכת נושא; **loader על כל המסך** בזמן החלת מיתוג; לוגו בסייד-בר.
 - **`feat(branding): runtime club colors + display name`** — טבלת `club_branding`;
   feature `branding` (getClubBranding, update action); צבע מותג יחיד נגזר לסקאלת
   primary מלאה ב-color-mix ונטען כ-CSS variables על שורש אזור המועדון בזמן ריצה;

@@ -40,22 +40,34 @@ export function TenantSidebar({
   userEmail,
   activeSeasonName,
   clubName,
+  logoUrl,
 }: {
   userEmail: string;
   activeSeasonName: string | null;
   clubName: string | null;
+  logoUrl: string | null;
 }) {
   const pathname = usePathname();
 
   return (
     <aside className="border-border bg-bg-surface flex w-60 shrink-0 flex-col border-e">
-      <div className="border-border border-b px-5 py-4">
-        <p className="text-text-primary text-sm font-bold">
-          {clubName ?? "מערכת המועדון"}
-        </p>
-        <p className="text-text-muted mt-0.5 text-xs">
-          עונה: {activeSeasonName ?? "—"}
-        </p>
+      <div className="border-border flex items-center gap-3 border-b px-5 py-4">
+        {logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt=""
+            className="border-border size-9 shrink-0 rounded-full border object-cover"
+          />
+        )}
+        <div className="min-w-0">
+          <p className="text-text-primary truncate text-sm font-bold">
+            {clubName ?? "מערכת המועדון"}
+          </p>
+          <p className="text-text-muted mt-0.5 text-xs">
+            עונה: {activeSeasonName ?? "—"}
+          </p>
+        </div>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 p-3">
