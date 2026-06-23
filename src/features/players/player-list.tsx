@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
+import { FormDialog } from "@/components/ui/form-dialog";
 import {
   Table,
   TableBody,
@@ -12,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Team } from "@/features/teams";
+import { EditPlayerForm } from "./edit-player-form";
 import { PlayerStatusControl } from "./player-status-control";
 import { TeamAssignmentControl } from "./team-assignment-control";
 import type { Player } from "./types";
@@ -95,11 +97,19 @@ export function PlayerList({
                   )}
                 </TableCell>
                 <TableCell className="text-end">
-                  <div className="flex justify-end">
+                  <div className="flex items-center justify-end gap-2">
                     <PlayerStatusControl
                       playerId={player.id}
                       status={player.status}
                     />
+                    <FormDialog
+                      triggerLabel="עריכה"
+                      triggerVariant="ghost"
+                      triggerSize="sm"
+                      title="עריכת שחקן"
+                    >
+                      <EditPlayerForm player={player} />
+                    </FormDialog>
                   </div>
                 </TableCell>
               </TableRow>

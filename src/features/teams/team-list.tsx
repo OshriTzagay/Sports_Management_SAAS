@@ -1,3 +1,4 @@
+import { FormDialog } from "@/components/ui/form-dialog";
 import {
   Table,
   TableBody,
@@ -6,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EditTeamForm } from "./edit-team-form";
 import { TeamDeleteButton } from "./team-delete-button";
 import type { Team } from "./types";
 
@@ -33,7 +35,17 @@ export function TeamList({ teams }: { teams: Team[] }) {
               {team.age_category ?? "—"}
             </TableCell>
             <TableCell className="text-end">
-              <TeamDeleteButton teamId={team.id} />
+              <div className="flex items-center justify-end gap-2">
+                <FormDialog
+                  triggerLabel="עריכה"
+                  triggerVariant="ghost"
+                  triggerSize="sm"
+                  title="עריכת קבוצה"
+                >
+                  <EditTeamForm team={team} />
+                </FormDialog>
+                <TeamDeleteButton teamId={team.id} />
+              </div>
             </TableCell>
           </TableRow>
         ))}

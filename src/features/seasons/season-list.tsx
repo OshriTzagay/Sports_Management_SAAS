@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { FormDialog } from "@/components/ui/form-dialog";
 import {
   Table,
   TableBody,
@@ -7,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EditSeasonForm } from "./edit-season-form";
 import { SeasonRowActions } from "./season-row-actions";
 import type { Season } from "./types";
 
@@ -52,7 +54,17 @@ export function SeasonList({ seasons }: { seasons: Season[] }) {
               <StatusBadge season={season} />
             </TableCell>
             <TableCell className="text-end">
-              <SeasonRowActions season={season} />
+              <div className="flex items-center justify-end gap-2">
+                <SeasonRowActions season={season} />
+                <FormDialog
+                  triggerLabel="עריכה"
+                  triggerVariant="ghost"
+                  triggerSize="sm"
+                  title="עריכת עונה"
+                >
+                  <EditSeasonForm season={season} />
+                </FormDialog>
+              </div>
             </TableCell>
           </TableRow>
         ))}

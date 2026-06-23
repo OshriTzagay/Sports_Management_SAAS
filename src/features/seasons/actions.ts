@@ -69,6 +69,45 @@ export async function createSeasonAction(
   return { error: null };
 }
 
+const updateSchema = z.object({
+  seasonId: z.string().uuid(),
+  name: z.string().trim().min(1, "שם עונה נדרש"),
+  startsOn: dateField,
+  endsOn: dateField,
+});
+
+/** עדכון פרטי עונה (שם/תאריכים). */
+export async function updateSeasonAction(
+  _prev: CreateSeasonState,
+  formData: FormData,
+): Promise<CreateSeasonState> {
+  await requireUser();
+
+  const parsed = updateSchema.safeParse({
+    seasonId: formData.get("seasonId"),
+    name: formData.get("name"),
+    startsOn: formData.get("startsOn"),
+    endsOn: formData.get("endsOn"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("seasons")
+    .update({
+      name: parsed.data.name,
+      starts_on: parsed.data.startsOn,
+      ends_on: parsed.data.endsOn,
+    })
+    .eq("id", parsed.data.seasonId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/tenant", "layout");
+  return { error: null };
+}
+
 /** הפעלת עונה (מכבה את הקודמת — עונה פעילה אחת למועדון). */
 export async function activateSeasonAction(formData: FormData): Promise<void> {
   await requireUser();

@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { FormDialog } from "@/components/ui/form-dialog";
 import {
   Table,
   TableBody,
@@ -10,6 +11,7 @@ import {
 import type { Team } from "@/features/teams";
 import { CoachStatusControl } from "./coach-status-control";
 import { CoachTeamAssignments } from "./coach-team-assignments";
+import { EditCoachForm } from "./edit-coach-form";
 import type { Coach, CoachAssignment } from "./types";
 
 function LicenseCell({ expiry }: { expiry: string | null }) {
@@ -76,8 +78,16 @@ export function CoachList({
               )}
             </TableCell>
             <TableCell className="text-end">
-              <div className="flex justify-end">
+              <div className="flex items-center justify-end gap-2">
                 <CoachStatusControl coachId={coach.id} status={coach.status} />
+                <FormDialog
+                  triggerLabel="עריכה"
+                  triggerVariant="ghost"
+                  triggerSize="sm"
+                  title="עריכת מאמן"
+                >
+                  <EditCoachForm coach={coach} />
+                </FormDialog>
               </div>
             </TableCell>
           </TableRow>

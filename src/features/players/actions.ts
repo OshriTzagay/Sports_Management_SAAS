@@ -52,6 +52,42 @@ export async function createPlayerAction(
   return { error: null };
 }
 
+const updateSchema = createSchema.extend({ playerId: z.string().uuid() });
+
+/** עדכון פרטי שחקן (זהות). */
+export async function updatePlayerAction(
+  _prev: CreatePlayerState,
+  formData: FormData,
+): Promise<CreatePlayerState> {
+  await requireUser();
+
+  const parsed = updateSchema.safeParse({
+    playerId: formData.get("playerId"),
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    nationalId: formData.get("nationalId"),
+    birthDate: formData.get("birthDate"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("players")
+    .update({
+      first_name: parsed.data.firstName,
+      last_name: parsed.data.lastName,
+      national_id: parsed.data.nationalId,
+      birth_date: parsed.data.birthDate,
+    })
+    .eq("id", parsed.data.playerId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/tenant", "layout");
+  return { error: null };
+}
+
 /** שינוי סטטוס שחקן (פעיל/לא פעיל/עזב). "עזב" = סטטוס, לא מחיקה. */
 export async function setPlayerStatusAction(formData: FormData): Promise<void> {
   await requireUser();

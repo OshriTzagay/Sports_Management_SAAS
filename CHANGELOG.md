@@ -6,6 +6,11 @@
 
 ### 2026-06-19
 
+- **`feat(ui): edit-in-modal for all entities`** — כפתור "עריכה" בכל שורה פותח
+  מודאל עם הנתונים הקיימים (שחקן/קבוצה/מאמן/עונה); update actions עם ולידציה,
+  נסגר אוטומטית בהצלחה. מוכן להרחבה כשיתווספו שדות.
+- **`fix(ui): optimistic select controls`** — selects של שיבוץ/סטטוס הם controlled
+  עם state אופטימי + router.refresh — הבחירה נשארת מיד (לא חוזרת לערך הישן).
 - **`fix(ui): stale data after mutations + layout/UX improvements`** — תיקון
   שורשי: `revalidatePath` השתמש בנתיבי המשתמש (`/teams`...) במקום בנתיב המרונדר
   (`/tenant/...`) בגלל ה-rewrite — שינויים נשמרו אך הופיעו רק אחרי רענון. עכשיו

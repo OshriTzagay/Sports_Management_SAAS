@@ -55,6 +55,44 @@ export async function createCoachAction(
   return { error: null };
 }
 
+const updateSchema = createSchema.extend({ coachId: z.string().uuid() });
+
+/** עדכון פרטי מאמן. */
+export async function updateCoachAction(
+  _prev: CreateCoachState,
+  formData: FormData,
+): Promise<CreateCoachState> {
+  await requireUser();
+
+  const parsed = updateSchema.safeParse({
+    coachId: formData.get("coachId"),
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    phone: formData.get("phone"),
+    certification: formData.get("certification"),
+    licenseExpiry: formData.get("licenseExpiry"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("coaches")
+    .update({
+      first_name: parsed.data.firstName,
+      last_name: parsed.data.lastName,
+      phone: parsed.data.phone,
+      certification: parsed.data.certification,
+      license_expiry: parsed.data.licenseExpiry,
+    })
+    .eq("id", parsed.data.coachId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/tenant", "layout");
+  return { error: null };
+}
+
 /** שינוי סטטוס מאמן (פעיל/לא פעיל). */
 export async function setCoachStatusAction(formData: FormData): Promise<void> {
   await requireUser();
