@@ -16,11 +16,18 @@
  * because @theme inline maps the Tailwind colors to these vars.
  */
 :root {
-  /* ---- Brand — overridable per club ---- */
-  --primary-700: #1e5c3a;
-  --primary-500: #2e8b57;
-  --primary-300: #7bc49a;
-  --primary-50: #e3f2ea;
+  /* ---- Brand — a single base color drives the whole scale (overridable per
+   *      club via --brand-base). The shades are derived with color-mix against
+   *      the surface/text tokens, so they adapt automatically to dark mode. */
+  --brand-base: #2e8b57;
+  --primary-500: var(--brand-base);
+  --primary-700: color-mix(
+    in oklab,
+    var(--brand-base),
+    var(--text-primary) 28%
+  );
+  --primary-300: color-mix(in oklab, var(--brand-base), var(--bg-surface) 42%);
+  --primary-50: color-mix(in oklab, var(--brand-base), var(--bg-surface) 88%);
 
   /* ---- Semantic — fixed (tied to the payment state machine) ---- */
   --success: #2e8b57;
@@ -64,6 +71,27 @@
   --input: var(--border);
   --ring: var(--primary-300);
   --radius: 0.625rem;
+}
+
+/* ---- Dark mode — overrides the raw neutral/semantic tokens. The brand scale
+ *      derives from --brand-base against these, so it adapts on its own. ---- */
+.dark {
+  --bg-page: #17171a;
+  --bg-surface: #1f1f23;
+  --bg-muted: #27272c;
+  --border: #34343b;
+  --text-primary: #f4f4f1;
+  --text-body: #d0d0ca;
+  --text-muted: #8d8d86;
+
+  --success-bg: #14271d;
+  --success-text: #7bc49a;
+  --warning-bg: #2a2310;
+  --warning-text: #e3c06a;
+  --danger-bg: #2c1714;
+  --danger-text: #e89a8c;
+  --info-bg: #102338;
+  --info-text: #8fbdf0;
 }
 
 @theme inline {

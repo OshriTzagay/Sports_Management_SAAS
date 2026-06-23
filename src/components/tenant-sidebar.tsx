@@ -7,12 +7,14 @@ import {
   ClipboardList,
   LayoutDashboard,
   LogOut,
+  Settings,
   UserRound,
   Users,
   type LucideIcon,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { signOutTenant } from "@/features/tenant-auth/actions";
 
 interface NavItem {
@@ -27,6 +29,7 @@ const NAV: NavItem[] = [
   { href: "/teams", label: "קבוצות", icon: Users },
   { href: "/players", label: "שחקנים", icon: UserRound },
   { href: "/coaches", label: "מאמנים", icon: ClipboardList },
+  { href: "/settings", label: "הגדרות", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -36,16 +39,20 @@ function isActive(pathname: string, href: string): boolean {
 export function TenantSidebar({
   userEmail,
   activeSeasonName,
+  clubName,
 }: {
   userEmail: string;
   activeSeasonName: string | null;
+  clubName: string | null;
 }) {
   const pathname = usePathname();
 
   return (
     <aside className="border-border bg-bg-surface flex w-60 shrink-0 flex-col border-e">
       <div className="border-border border-b px-5 py-4">
-        <p className="text-text-primary text-sm font-bold">מערכת המועדון</p>
+        <p className="text-text-primary text-sm font-bold">
+          {clubName ?? "מערכת המועדון"}
+        </p>
         <p className="text-text-muted mt-0.5 text-xs">
           עונה: {activeSeasonName ?? "—"}
         </p>
@@ -73,10 +80,9 @@ export function TenantSidebar({
         })}
       </nav>
 
-      <div className="border-border border-t p-3">
-        <p className="text-text-muted truncate px-3 pb-2 text-xs">
-          {userEmail}
-        </p>
+      <div className="border-border flex flex-col gap-2 border-t p-3">
+        <ThemeToggle />
+        <p className="text-text-muted truncate px-3 text-xs">{userEmail}</p>
         <form action={signOutTenant}>
           <button
             type="submit"

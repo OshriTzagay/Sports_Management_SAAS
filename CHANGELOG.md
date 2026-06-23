@@ -6,6 +6,11 @@
 
 ### 2026-06-19
 
+- **`feat(branding): runtime club colors + display name`** — טבלת `club_branding`;
+  feature `branding` (getClubBranding, update action); צבע מותג יחיד נגזר לסקאלת
+  primary מלאה ב-color-mix ונטען כ-CSS variables על שורש אזור המועדון בזמן ריצה;
+  שם תצוגה בסייד-בר; עמוד הגדרות עם color-picker. בדיקת בידוד עוברת. *(העלאת לוגו
+  — דורש Supabase Storage + סניטציית SVG, נדחה להחלטה)*
 - **`feat(dashboard): club metrics`** — feature `dashboard` עם מטריקות מצרפיות
   (count יעיל ב-head) + רכיב `MetricCard` (design-system); עמוד הבית של המועדון
   הפך לדשבורד: שחקנים פעילים, קבוצות בעונה, מאמנים פעילים, שחקנים ללא שיבוץ.
