@@ -1,22 +1,35 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { useDialogClose } from "@/components/ui/form-dialog";
 import { createSeasonAction, type CreateSeasonState } from "./actions";
 import type { Season } from "./types";
 
 const initialState: CreateSeasonState = { error: null };
 
 export function CreateSeasonForm({ seasons }: { seasons: Season[] }) {
+  const close = useDialogClose();
   const [state, formAction, pending] = useActionState(
     createSeasonAction,
     initialState,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  const wasPending = useRef(false);
+
+  useEffect(() => {
+    if (wasPending.current && !pending && !state.error) {
+      formRef.current?.reset();
+      close();
+    }
+    wasPending.current = pending;
+  }, [pending, state.error, close]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-3">
       <Input name="name" placeholder="שם העונה — למשל 2026/27" required />
       <div className="flex gap-2">
         <Input name="startsOn" type="date" aria-label="תאריך התחלה" />
@@ -41,7 +54,7 @@ export function CreateSeasonForm({ seasons }: { seasons: Season[] }) {
       )}
       {state.error && <p className="text-danger text-sm">{state.error}</p>}
       <Button type="submit" disabled={pending}>
-        {pending ? "יוצר…" : "עונה חדשה"}
+        {pending ? <Spinner className="size-4" /> : "עונה חדשה"}
       </Button>
     </form>
   );

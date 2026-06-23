@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormDialog } from "@/components/ui/form-dialog";
 import { requireUser } from "@/features/tenant-auth";
 import { getActiveSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
@@ -30,21 +30,18 @@ export default async function TeamsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-text-primary text-xl font-bold">קבוצות</h1>
-        <span className="text-text-muted text-sm">
-          עונה: {activeSeason.name}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-text-muted text-sm">
+            עונה: {activeSeason.name}
+          </span>
+          <FormDialog triggerLabel="+ קבוצה" title="קבוצה חדשה">
+            <CreateTeamForm seasonId={activeSeason.id} />
+          </FormDialog>
+        </div>
       </div>
       <TeamList teams={teams} />
-      <Card className="max-w-md">
-        <CardHeader>
-          <CardTitle className="text-base">הוספת קבוצה</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CreateTeamForm seasonId={activeSeason.id} />
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -6,6 +6,10 @@
 
 ### 2026-06-19
 
+- **`feat(ui): create-in-modal flows + loaders + micro-interactions`** — רכיב
+  `FormDialog` (מודאל ליצירה, נסגר אוטומטית בהצלחה); יצירת עונה/קבוצה/שחקן/מאמן
+  עברה לכפתור "+" שפותח מודאל (במקום טופס מתחת לטבלה); רכיב `Spinner` + loader
+  ברמת ה-route; אנימציית פתיחת מודאל + לחיצת כפתור. *(עריכה-במודאל — pass הבא)*
 - **`feat(branding): logo upload + designed settings + apply loader`** — Supabase
   Storage (bucket ציבורי + RLS לפי תיקיית מועדון, PNG/JPG עד 1MB); עמוד הגדרות
   מעוצב: העלאת לוגו עם תצוגה, swatches + color-picker + תצוגה מקדימה חיה, בורר

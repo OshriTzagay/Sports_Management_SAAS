@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormDialog } from "@/components/ui/form-dialog";
 import { requireUser } from "@/features/tenant-auth";
 import { listSeasons } from "@/features/seasons";
 import { SeasonList } from "@/features/seasons/season-list";
@@ -11,19 +11,16 @@ export default async function SeasonsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-text-primary text-xl font-bold">עונות</h1>
-        <SeasonStatusInfo />
+        <div className="flex items-center gap-2">
+          <SeasonStatusInfo />
+          <FormDialog triggerLabel="+ עונה חדשה" title="עונה חדשה">
+            <CreateSeasonForm seasons={seasons} />
+          </FormDialog>
+        </div>
       </div>
       <SeasonList seasons={seasons} />
-      <Card className="max-w-md">
-        <CardHeader>
-          <CardTitle className="text-base">הוספת עונה</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CreateSeasonForm seasons={seasons} />
-        </CardContent>
-      </Card>
     </div>
   );
 }
