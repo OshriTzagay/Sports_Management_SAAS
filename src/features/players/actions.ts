@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireUser } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { toUserMessage } from "@/lib/db-error";
 
 const optionalText = z
   .string()
@@ -46,7 +47,9 @@ export async function createPlayerAction(
     national_id: parsed.data.nationalId,
     birth_date: parsed.data.birthDate,
   });
-  if (error) return { error: error.message };
+  if (error) {
+    return { error: toUserMessage(error, "כבר קיים שחקן עם ת.ז. זו במועדון") };
+  }
 
   revalidatePath("/tenant", "layout");
   return { error: null };
@@ -124,7 +127,9 @@ export async function updatePlayerAction(
       status: parsed.data.status,
     })
     .eq("id", parsed.data.playerId);
-  if (error) return { error: error.message };
+  if (error) {
+    return { error: toUserMessage(error, "כבר קיים שחקן עם ת.ז. זו במועדון") };
+  }
 
   if (parsed.data.seasonId) {
     try {

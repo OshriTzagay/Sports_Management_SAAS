@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 
 import { TenantSidebar } from "@/components/tenant-sidebar";
+import { BrandingLogoProvider } from "@/components/branding-logo-provider";
 import { requireUser } from "@/features/tenant-auth";
 import { getActiveSeason } from "@/features/seasons";
 import {
@@ -20,6 +21,7 @@ export default async function TenantAppLayout({
     getActiveSeason(),
     getClubBranding(),
   ]);
+  const logoUrl = logoPublicUrl(branding?.logo_path ?? null);
 
   return (
     <div
@@ -30,10 +32,14 @@ export default async function TenantAppLayout({
         userEmail={user.email}
         activeSeasonName={activeSeason?.name ?? null}
         clubName={branding?.display_name ?? null}
-        logoUrl={logoPublicUrl(branding?.logo_path ?? null)}
+        logoUrl={logoUrl}
       />
       <main className="min-w-0 flex-1 p-5 lg:p-7">
-        <div className="mx-auto w-full max-w-[1600px]">{children}</div>
+        <div className="mx-auto w-full max-w-[1600px]">
+          <BrandingLogoProvider logoUrl={logoUrl}>
+            {children}
+          </BrandingLogoProvider>
+        </div>
       </main>
     </div>
   );

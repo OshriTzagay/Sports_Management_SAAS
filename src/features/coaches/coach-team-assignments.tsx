@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -34,10 +34,16 @@ export function CoachTeamAssignments({
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function add(formData: FormData) {
     startTransition(async () => {
-      await addCoachAssignmentAction(formData);
+      const result = await addCoachAssignmentAction(formData);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setError(null);
       formRef.current?.reset();
       router.refresh();
     });
@@ -113,6 +119,7 @@ export function CoachTeamAssignments({
           </Button>
         </form>
       )}
+      {error && <p className="text-danger text-xs">{error}</p>}
     </div>
   );
 }

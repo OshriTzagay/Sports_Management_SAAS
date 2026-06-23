@@ -6,6 +6,11 @@
 
 ### 2026-06-19
 
+- **`feat(ui): modal brand watermark + friendly duplicate errors`** — לוגו המועדון
+  כ-watermark עדין (opacity ~5%) ברקע כל מודאל + אייקון קטן ליד הכותרת (דרך
+  BrandingLogoProvider); הודעות שגיאה ידידותיות לאילוצי ייחודיות — שיוך כפול של
+  מאמן לקבוצה, שם קבוצה/עונה כפול, ת.ז. כפולה (helper `toUserMessage`). בדיקה
+  סופית: build/typecheck/lint + כל בדיקות ה-DB עוברות.
 - **`feat(ui): click-row-to-edit modals with all controls inside`** — אין יותר
   כפתור "עריכה": לחיצה על שורה (cursor-pointer) פותחת מודאל עם **כל** העדכונים
   פנימה — שחקן: זהות+סטטוס+קבוצה (שמירה אחת); מאמן: זהות+סטטוס + ניהול שיוכי

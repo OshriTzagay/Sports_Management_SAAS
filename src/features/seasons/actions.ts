@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireUser } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { toUserMessage } from "@/lib/db-error";
 
 const dateField = z
   .string()
@@ -52,7 +53,7 @@ export async function createSeasonAction(
     })
     .select("id")
     .single();
-  if (error) return { error: error.message };
+  if (error) return { error: toUserMessage(error, "כבר קיימת עונה בשם זה") };
 
   // גלגול אופציונלי: העתקת מבנה מעונה קיימת לעונה החדשה.
   if (parsed.data.rolloverFromId) {
@@ -102,7 +103,7 @@ export async function updateSeasonAction(
       ends_on: parsed.data.endsOn,
     })
     .eq("id", parsed.data.seasonId);
-  if (error) return { error: error.message };
+  if (error) return { error: toUserMessage(error, "כבר קיימת עונה בשם זה") };
 
   revalidatePath("/tenant", "layout");
   return { error: null };

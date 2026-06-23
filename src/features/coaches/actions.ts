@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireUser } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { toUserMessage } from "@/lib/db-error";
 
 const optionalText = z
   .string()
@@ -98,10 +99,10 @@ export async function updateCoachAction(
   return { error: null };
 }
 
-/** שיוך מאמן לקבוצה בעונה עם תפקיד. */
+/** שיוך מאמן לקבוצה בעונה עם תפקיד. מחזיר הודעת שגיאה (למשל שיוך כפול). */
 export async function addCoachAssignmentAction(
   formData: FormData,
-): Promise<void> {
+): Promise<{ error: string | null }> {
   const user = await requireUser();
   const parsed = z
     .object({
@@ -110,24 +111,28 @@ export async function addCoachAssignmentAction(
       seasonId: z.string().uuid(),
       role: z.enum(["head", "assistant", "goalkeeping"]),
     })
-    .parse({
+    .safeParse({
       coachId: formData.get("coachId"),
       teamId: formData.get("teamId"),
       seasonId: formData.get("seasonId"),
       role: formData.get("role"),
     });
+  if (!parsed.success) return { error: "קלט לא תקין" };
 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.from("team_coaches").insert({
     club_id: user.club_id,
-    season_id: parsed.seasonId,
-    team_id: parsed.teamId,
-    coach_id: parsed.coachId,
-    role: parsed.role,
+    season_id: parsed.data.seasonId,
+    team_id: parsed.data.teamId,
+    coach_id: parsed.data.coachId,
+    role: parsed.data.role,
   });
-  if (error) throw new Error(error.message);
+  if (error) {
+    return { error: toUserMessage(error, "המאמן כבר משויך לקבוצה זו בעונה") };
+  }
 
   revalidatePath("/tenant", "layout");
+  return { error: null };
 }
 
 /** הסרת שיוך מאמן↔קבוצה (soft-delete). */

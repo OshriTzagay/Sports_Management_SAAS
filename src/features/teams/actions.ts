@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireUser } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { toUserMessage } from "@/lib/db-error";
 
 const createSchema = z.object({
   name: z.string().trim().min(1, "שם קבוצה נדרש"),
@@ -41,7 +42,9 @@ export async function createTeamAction(
     name: parsed.data.name,
     age_category: parsed.data.ageCategory,
   });
-  if (error) return { error: error.message };
+  if (error) {
+    return { error: toUserMessage(error, "כבר קיימת קבוצה בשם זה בעונה") };
+  }
 
   revalidatePath("/tenant", "layout");
   return { error: null };
@@ -78,7 +81,9 @@ export async function updateTeamAction(
     .from("teams")
     .update({ name: parsed.data.name, age_category: parsed.data.ageCategory })
     .eq("id", parsed.data.teamId);
-  if (error) return { error: error.message };
+  if (error) {
+    return { error: toUserMessage(error, "כבר קיימת קבוצה בשם זה בעונה") };
+  }
 
   revalidatePath("/tenant", "layout");
   return { error: null };

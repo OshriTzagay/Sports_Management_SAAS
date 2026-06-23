@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { Button, type ButtonProps } from "@/components/ui/button";
+import { useBrandingLogo } from "@/components/branding-logo-provider";
 
 const DialogCloseContext = createContext<() => void>(() => {});
 
@@ -33,6 +34,7 @@ export function FormDialog({
 }: FormDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const close = useCallback(() => ref.current?.close(), []);
+  const logoUrl = useBrandingLogo();
 
   return (
     <>
@@ -49,11 +51,30 @@ export function FormDialog({
         onClick={(e) => {
           if (e.target === ref.current) close();
         }}
-        className="border-border bg-bg-surface text-text-body m-auto w-[min(92vw,30rem)] rounded-lg border p-0 shadow-lg backdrop:bg-black/40"
+        className="border-border bg-bg-surface text-text-body relative m-auto w-[min(92vw,30rem)] overflow-hidden rounded-lg border p-0 shadow-lg backdrop:bg-black/40"
       >
-        <div className="flex flex-col gap-4 p-6">
+        {logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 m-auto size-56 object-contain opacity-[0.05]"
+          />
+        )}
+        <div className="relative flex flex-col gap-4 p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-text-primary text-lg font-bold">{title}</h2>
+            <div className="flex items-center gap-2">
+              {logoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrl}
+                  alt=""
+                  className="border-border size-6 rounded-full border object-cover"
+                />
+              )}
+              <h2 className="text-text-primary text-lg font-bold">{title}</h2>
+            </div>
             <button
               type="button"
               aria-label="סגירה"
