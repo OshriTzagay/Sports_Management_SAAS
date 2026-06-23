@@ -5,14 +5,18 @@ import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { useDialogClose } from "@/components/ui/form-dialog";
 import { updateSeasonAction, type CreateSeasonState } from "./actions";
 import type { Season } from "./types";
 
 const initialState: CreateSeasonState = { error: null };
 
-export function EditSeasonForm({ season }: { season: Season }) {
-  const close = useDialogClose();
+export function EditSeasonForm({
+  season,
+  onClose,
+}: {
+  season: Season;
+  onClose: () => void;
+}) {
   const [state, formAction, pending] = useActionState(
     updateSeasonAction,
     initialState,
@@ -20,9 +24,9 @@ export function EditSeasonForm({ season }: { season: Season }) {
   const wasPending = useRef(false);
 
   useEffect(() => {
-    if (wasPending.current && !pending && !state.error) close();
+    if (wasPending.current && !pending && !state.error) onClose();
     wasPending.current = pending;
-  }, [pending, state.error, close]);
+  }, [pending, state.error, onClose]);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">

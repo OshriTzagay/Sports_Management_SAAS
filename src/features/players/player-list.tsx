@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { FormDialog } from "@/components/ui/form-dialog";
+import { RowModal } from "@/components/ui/row-modal";
 import {
   Table,
   TableBody,
@@ -14,13 +15,17 @@ import {
 } from "@/components/ui/table";
 import type { Team } from "@/features/teams";
 import { EditPlayerForm } from "./edit-player-form";
-import { PlayerStatusControl } from "./player-status-control";
-import { TeamAssignmentControl } from "./team-assignment-control";
-import type { Player } from "./types";
+import { PLAYER_STATUS_LABELS, type Player, type PlayerStatus } from "./types";
 
 function formatDate(value: string | null): string {
   return value ? new Date(value).toLocaleDateString("he-IL") : "—";
 }
+
+const STATUS_VARIANT: Record<PlayerStatus, "success" | "muted" | "danger"> = {
+  active: "success",
+  inactive: "muted",
+  left: "danger",
+};
 
 interface PlayerListProps {
   players: Player[];
@@ -36,6 +41,19 @@ export function PlayerList({
   teamByPlayer,
 }: PlayerListProps) {
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<Player | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  const teamName = useMemo(
+    () => Object.fromEntries(teams.map((t) => [t.id, t.name])),
+    [teams],
+  );
+
+  const open = (player: Player) => {
+    setSelected(player);
+    dialogRef.current?.showModal();
+  };
+  const close = useCallback(() => dialogRef.current?.close(), []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -74,7 +92,11 @@ export function PlayerList({
           </TableHeader>
           <TableBody>
             {filtered.map((player) => (
-              <TableRow key={player.id}>
+              <TableRow
+                key={player.id}
+                onClick={() => open(player)}
+                className="cursor-pointer"
+              >
                 <TableCell className="text-text-primary font-medium">
                   {player.first_name} {player.last_name}
                 </TableCell>
@@ -84,39 +106,32 @@ export function PlayerList({
                 <TableCell className="text-text-muted">
                   {formatDate(player.birth_date)}
                 </TableCell>
-                <TableCell>
-                  {seasonId ? (
-                    <TeamAssignmentControl
-                      playerId={player.id}
-                      seasonId={seasonId}
-                      currentTeamId={teamByPlayer[player.id] ?? null}
-                      teams={teams}
-                    />
-                  ) : (
-                    <span className="text-text-muted">—</span>
-                  )}
+                <TableCell className="text-text-muted">
+                  {teamName[teamByPlayer[player.id] ?? ""] ?? "—"}
                 </TableCell>
                 <TableCell className="text-end">
-                  <div className="flex items-center justify-end gap-2">
-                    <PlayerStatusControl
-                      playerId={player.id}
-                      status={player.status}
-                    />
-                    <FormDialog
-                      triggerLabel="עריכה"
-                      triggerVariant="ghost"
-                      triggerSize="sm"
-                      title="עריכת שחקן"
-                    >
-                      <EditPlayerForm player={player} />
-                    </FormDialog>
-                  </div>
+                  <Badge variant={STATUS_VARIANT[player.status]}>
+                    {PLAYER_STATUS_LABELS[player.status]}
+                  </Badge>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       )}
+
+      <RowModal dialogRef={dialogRef} title="עריכת שחקן" onClose={close}>
+        {selected && (
+          <EditPlayerForm
+            key={selected.id}
+            player={selected}
+            seasonId={seasonId}
+            teams={teams}
+            currentTeamId={teamByPlayer[selected.id] ?? null}
+            onClose={close}
+          />
+        )}
+      </RowModal>
     </div>
   );
 }

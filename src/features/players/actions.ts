@@ -52,14 +52,52 @@ export async function createPlayerAction(
   return { error: null };
 }
 
-const updateSchema = createSchema.extend({ playerId: z.string().uuid() });
+type Supabase = Awaited<ReturnType<typeof createServerSupabaseClient>>;
+const idOrEmpty = z
+  .union([z.string().uuid(), z.literal("")])
+  .optional()
+  .transform((v) => (v ? v : null));
 
-/** עדכון פרטי שחקן (זהות). */
+/** מסיר שיבוץ פעיל לעונה ומשבץ מחדש אם נבחרה קבוצה (שיבוץ אחד לעונה). */
+async function applyTeamAssignment(
+  supabase: Supabase,
+  clubId: string,
+  seasonId: string,
+  playerId: string,
+  teamId: string | null,
+): Promise<void> {
+  const { error: removeError } = await supabase
+    .from("team_players")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("season_id", seasonId)
+    .eq("player_id", playerId)
+    .is("deleted_at", null);
+  if (removeError) throw new Error(removeError.message);
+
+  if (teamId) {
+    const { error: insertError } = await supabase.from("team_players").insert({
+      club_id: clubId,
+      season_id: seasonId,
+      team_id: teamId,
+      player_id: playerId,
+    });
+    if (insertError) throw new Error(insertError.message);
+  }
+}
+
+const updateSchema = createSchema.extend({
+  playerId: z.string().uuid(),
+  status: z.enum(["active", "inactive", "left"]),
+  seasonId: idOrEmpty,
+  teamId: idOrEmpty,
+});
+
+/** עדכון מלא של שחקן מהמודאל: זהות + סטטוס + שיבוץ לקבוצה בעונה. */
 export async function updatePlayerAction(
   _prev: CreatePlayerState,
   formData: FormData,
 ): Promise<CreatePlayerState> {
-  await requireUser();
+  const user = await requireUser();
 
   const parsed = updateSchema.safeParse({
     playerId: formData.get("playerId"),
@@ -67,6 +105,9 @@ export async function updatePlayerAction(
     lastName: formData.get("lastName"),
     nationalId: formData.get("nationalId"),
     birthDate: formData.get("birthDate"),
+    status: formData.get("status"),
+    seasonId: formData.get("seasonId"),
+    teamId: formData.get("teamId"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
@@ -80,74 +121,25 @@ export async function updatePlayerAction(
       last_name: parsed.data.lastName,
       national_id: parsed.data.nationalId,
       birth_date: parsed.data.birthDate,
+      status: parsed.data.status,
     })
     .eq("id", parsed.data.playerId);
   if (error) return { error: error.message };
 
-  revalidatePath("/tenant", "layout");
-  return { error: null };
-}
-
-/** שינוי סטטוס שחקן (פעיל/לא פעיל/עזב). "עזב" = סטטוס, לא מחיקה. */
-export async function setPlayerStatusAction(formData: FormData): Promise<void> {
-  await requireUser();
-  const parsed = z
-    .object({
-      playerId: z.string().uuid(),
-      status: z.enum(["active", "inactive", "left"]),
-    })
-    .parse({
-      playerId: formData.get("playerId"),
-      status: formData.get("status"),
-    });
-
-  const supabase = await createServerSupabaseClient();
-  const { error } = await supabase
-    .from("players")
-    .update({ status: parsed.status })
-    .eq("id", parsed.playerId);
-  if (error) throw new Error(error.message);
-
-  revalidatePath("/tenant", "layout");
-}
-
-/** שיבוץ שחקן לקבוצה בעונה (teamId ריק = הסרת שיבוץ). שיבוץ אחד לעונה. */
-export async function assignPlayerToTeamAction(
-  formData: FormData,
-): Promise<void> {
-  const user = await requireUser();
-  const parsed = z
-    .object({
-      playerId: z.string().uuid(),
-      seasonId: z.string().uuid(),
-      teamId: z.union([z.string().uuid(), z.literal("")]),
-    })
-    .parse({
-      playerId: formData.get("playerId"),
-      seasonId: formData.get("seasonId"),
-      teamId: formData.get("teamId") ?? "",
-    });
-
-  const supabase = await createServerSupabaseClient();
-
-  // מסירים שיבוץ פעיל קיים לאותה עונה (soft-delete), ואז משבצים מחדש אם נבחרה קבוצה.
-  const { error: removeError } = await supabase
-    .from("team_players")
-    .update({ deleted_at: new Date().toISOString() })
-    .eq("season_id", parsed.seasonId)
-    .eq("player_id", parsed.playerId)
-    .is("deleted_at", null);
-  if (removeError) throw new Error(removeError.message);
-
-  if (parsed.teamId) {
-    const { error: insertError } = await supabase.from("team_players").insert({
-      club_id: user.club_id,
-      season_id: parsed.seasonId,
-      team_id: parsed.teamId,
-      player_id: parsed.playerId,
-    });
-    if (insertError) throw new Error(insertError.message);
+  if (parsed.data.seasonId) {
+    try {
+      await applyTeamAssignment(
+        supabase,
+        user.club_id,
+        parsed.data.seasonId,
+        parsed.data.playerId,
+        parsed.data.teamId,
+      );
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : "שגיאה בשיבוץ" };
+    }
   }
 
   revalidatePath("/tenant", "layout");
+  return { error: null };
 }

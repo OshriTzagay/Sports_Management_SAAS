@@ -55,9 +55,12 @@ export async function createCoachAction(
   return { error: null };
 }
 
-const updateSchema = createSchema.extend({ coachId: z.string().uuid() });
+const updateSchema = createSchema.extend({
+  coachId: z.string().uuid(),
+  status: z.enum(["active", "inactive"]),
+});
 
-/** עדכון פרטי מאמן. */
+/** עדכון מלא של מאמן מהמודאל: זהות + הסמכות + סטטוס. */
 export async function updateCoachAction(
   _prev: CreateCoachState,
   formData: FormData,
@@ -71,6 +74,7 @@ export async function updateCoachAction(
     phone: formData.get("phone"),
     certification: formData.get("certification"),
     licenseExpiry: formData.get("licenseExpiry"),
+    status: formData.get("status"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
@@ -85,35 +89,13 @@ export async function updateCoachAction(
       phone: parsed.data.phone,
       certification: parsed.data.certification,
       license_expiry: parsed.data.licenseExpiry,
+      status: parsed.data.status,
     })
     .eq("id", parsed.data.coachId);
   if (error) return { error: error.message };
 
   revalidatePath("/tenant", "layout");
   return { error: null };
-}
-
-/** שינוי סטטוס מאמן (פעיל/לא פעיל). */
-export async function setCoachStatusAction(formData: FormData): Promise<void> {
-  await requireUser();
-  const parsed = z
-    .object({
-      coachId: z.string().uuid(),
-      status: z.enum(["active", "inactive"]),
-    })
-    .parse({
-      coachId: formData.get("coachId"),
-      status: formData.get("status"),
-    });
-
-  const supabase = await createServerSupabaseClient();
-  const { error } = await supabase
-    .from("coaches")
-    .update({ status: parsed.status })
-    .eq("id", parsed.coachId);
-  if (error) throw new Error(error.message);
-
-  revalidatePath("/tenant", "layout");
 }
 
 /** שיוך מאמן לקבוצה בעונה עם תפקיד. */

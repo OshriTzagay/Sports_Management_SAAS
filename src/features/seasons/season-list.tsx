@@ -1,5 +1,9 @@
+"use client";
+
+import { useCallback, useRef, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
-import { FormDialog } from "@/components/ui/form-dialog";
+import { RowModal } from "@/components/ui/row-modal";
 import {
   Table,
   TableBody,
@@ -27,48 +31,64 @@ function StatusBadge({ season }: { season: Season }) {
 }
 
 export function SeasonList({ seasons }: { seasons: Season[] }) {
+  const [selected, setSelected] = useState<Season | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  const open = (season: Season) => {
+    setSelected(season);
+    dialogRef.current?.showModal();
+  };
+  const close = useCallback(() => dialogRef.current?.close(), []);
+
   if (seasons.length === 0) {
     return <p className="text-text-muted text-sm">עדיין אין עונות.</p>;
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>עונה</TableHead>
-          <TableHead>תאריכים</TableHead>
-          <TableHead>סטטוס</TableHead>
-          <TableHead className="text-end">פעולות</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {seasons.map((season) => (
-          <TableRow key={season.id}>
-            <TableCell className="text-text-primary font-medium">
-              {season.name}
-            </TableCell>
-            <TableCell className="text-text-muted">
-              {formatRange(season.starts_on, season.ends_on)}
-            </TableCell>
-            <TableCell>
-              <StatusBadge season={season} />
-            </TableCell>
-            <TableCell className="text-end">
-              <div className="flex items-center justify-end gap-2">
-                <SeasonRowActions season={season} />
-                <FormDialog
-                  triggerLabel="עריכה"
-                  triggerVariant="ghost"
-                  triggerSize="sm"
-                  title="עריכת עונה"
-                >
-                  <EditSeasonForm season={season} />
-                </FormDialog>
-              </div>
-            </TableCell>
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>עונה</TableHead>
+            <TableHead>תאריכים</TableHead>
+            <TableHead className="text-end">סטטוס</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {seasons.map((season) => (
+            <TableRow
+              key={season.id}
+              onClick={() => open(season)}
+              className="cursor-pointer"
+            >
+              <TableCell className="text-text-primary font-medium">
+                {season.name}
+              </TableCell>
+              <TableCell className="text-text-muted">
+                {formatRange(season.starts_on, season.ends_on)}
+              </TableCell>
+              <TableCell className="text-end">
+                <StatusBadge season={season} />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <RowModal dialogRef={dialogRef} title="עריכת עונה" onClose={close}>
+        {selected && (
+          <div className="flex flex-col gap-4">
+            <EditSeasonForm
+              key={selected.id}
+              season={selected}
+              onClose={close}
+            />
+            <div className="border-border flex items-center gap-2 border-t pt-4">
+              <SeasonRowActions season={selected} />
+            </div>
+          </div>
+        )}
+      </RowModal>
+    </>
   );
 }

@@ -5,14 +5,29 @@ import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { useDialogClose } from "@/components/ui/form-dialog";
+import type { Team } from "@/features/teams";
 import { updatePlayerAction, type CreatePlayerState } from "./actions";
-import type { Player } from "./types";
+import { PLAYER_STATUS_LABELS, type Player, type PlayerStatus } from "./types";
 
 const initialState: CreatePlayerState = { error: null };
+const STATUSES = Object.keys(PLAYER_STATUS_LABELS) as PlayerStatus[];
 
-export function EditPlayerForm({ player }: { player: Player }) {
-  const close = useDialogClose();
+const selectClass =
+  "h-10 w-full rounded-md border border-border bg-bg-surface px-3 text-sm text-text-primary";
+
+export function EditPlayerForm({
+  player,
+  seasonId,
+  teams,
+  currentTeamId,
+  onClose,
+}: {
+  player: Player;
+  seasonId: string | null;
+  teams: Team[];
+  currentTeamId: string | null;
+  onClose: () => void;
+}) {
   const [state, formAction, pending] = useActionState(
     updatePlayerAction,
     initialState,
@@ -20,13 +35,15 @@ export function EditPlayerForm({ player }: { player: Player }) {
   const wasPending = useRef(false);
 
   useEffect(() => {
-    if (wasPending.current && !pending && !state.error) close();
+    if (wasPending.current && !pending && !state.error) onClose();
     wasPending.current = pending;
-  }, [pending, state.error, close]);
+  }, [pending, state.error, onClose]);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <input type="hidden" name="playerId" value={player.id} />
+      {seasonId && <input type="hidden" name="seasonId" value={seasonId} />}
+
       <div className="flex gap-2">
         <Input name="firstName" defaultValue={player.first_name} required />
         <Input name="lastName" defaultValue={player.last_name} required />
@@ -43,6 +60,40 @@ export function EditPlayerForm({ player }: { player: Player }) {
         aria-label="תאריך לידה"
         defaultValue={player.birth_date ?? ""}
       />
+
+      <label className="text-text-muted flex flex-col gap-1 text-xs">
+        סטטוס
+        <select
+          name="status"
+          defaultValue={player.status}
+          className={selectClass}
+        >
+          {STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {PLAYER_STATUS_LABELS[s]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {seasonId && (
+        <label className="text-text-muted flex flex-col gap-1 text-xs">
+          קבוצה (בעונה הפעילה)
+          <select
+            name="teamId"
+            defaultValue={currentTeamId ?? ""}
+            className={selectClass}
+          >
+            <option value="">— ללא —</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       {state.error && <p className="text-danger text-sm">{state.error}</p>}
       <Button type="submit" disabled={pending}>
         {pending ? <Spinner className="size-4" /> : "שמירה"}
