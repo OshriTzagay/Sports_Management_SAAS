@@ -18,7 +18,9 @@ import {
 
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SeasonSwitcher } from "@/components/season-switcher";
 import { signOutTenant } from "@/features/tenant-auth/actions";
+import type { Season } from "@/features/seasons";
 
 interface NavItem {
   href: string;
@@ -41,12 +43,14 @@ function isActive(pathname: string, href: string): boolean {
 
 export function TenantSidebar({
   userEmail,
-  activeSeasonName,
+  seasons,
+  selectedSeasonId,
   clubName,
   logoUrl,
 }: {
   userEmail: string;
-  activeSeasonName: string | null;
+  seasons: Season[];
+  selectedSeasonId: string | null;
   clubName: string | null;
   logoUrl: string | null;
 }) {
@@ -87,14 +91,9 @@ export function TenantSidebar({
           />
         )}
         {!collapsed && (
-          <div className="min-w-0 flex-1">
-            <p className="text-text-primary truncate text-sm font-bold">
-              {clubName ?? "מערכת המועדון"}
-            </p>
-            <p className="text-text-muted mt-0.5 truncate text-xs">
-              עונה: {activeSeasonName ?? "—"}
-            </p>
-          </div>
+          <p className="text-text-primary min-w-0 flex-1 truncate text-sm font-bold">
+            {clubName ?? "מערכת המועדון"}
+          </p>
         )}
         <button
           type="button"
@@ -109,6 +108,13 @@ export function TenantSidebar({
           )}
         </button>
       </div>
+
+      {!collapsed && (
+        <div className="border-border flex flex-col gap-1 border-b px-4 py-3">
+          <span className="text-text-muted text-xs">עונה</span>
+          <SeasonSwitcher seasons={seasons} selectedId={selectedSeasonId} />
+        </div>
+      )}
 
       <nav className="flex flex-1 flex-col gap-1 p-2">
         {NAV.map((item) => {

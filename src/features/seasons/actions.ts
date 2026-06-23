@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { z } from "zod";
 
 import { requireUser } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toUserMessage } from "@/lib/db-error";
+import { SEASON_COOKIE } from "./queries";
 
 const dateField = z
   .string()
@@ -134,6 +136,17 @@ export async function closeSeasonAction(formData: FormData): Promise<void> {
     .update({ status: "closed" })
     .eq("id", seasonId);
   if (error) throw new Error(error.message);
+
+  revalidatePath("/tenant", "layout");
+}
+
+/** מתג העונה הגלובלי — שומר את העונה הנבחרת ב-cookie לכל המסכים. */
+export async function selectSeasonAction(formData: FormData): Promise<void> {
+  await requireUser();
+  const seasonId = z.string().uuid().parse(formData.get("seasonId"));
+
+  const cookieStore = await cookies();
+  cookieStore.set(SEASON_COOKIE, seasonId, { sameSite: "lax", path: "/" });
 
   revalidatePath("/tenant", "layout");
 }

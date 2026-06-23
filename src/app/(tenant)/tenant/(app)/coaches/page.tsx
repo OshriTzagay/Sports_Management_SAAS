@@ -1,6 +1,7 @@
+import { Badge } from "@/components/ui/badge";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { requireUser } from "@/features/tenant-auth";
-import { getActiveSeason } from "@/features/seasons";
+import { getSelectedSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
 import { listCoaches, listSeasonCoachAssignments } from "@/features/coaches";
 import type { CoachAssignment } from "@/features/coaches";
@@ -10,15 +11,17 @@ import { CreateCoachForm } from "@/features/coaches/create-coach-form";
 export default async function CoachesPage() {
   await requireUser();
 
-  const [activeSeason, coaches] = await Promise.all([
-    getActiveSeason(),
+  const [season, coaches] = await Promise.all([
+    getSelectedSeason(),
     listCoaches(),
   ]);
 
-  const [teams, assignments] = activeSeason
+  const readOnly = season?.status === "closed";
+
+  const [teams, assignments] = season
     ? await Promise.all([
-        listTeams(activeSeason.id),
-        listSeasonCoachAssignments(activeSeason.id),
+        listTeams(season.id),
+        listSeasonCoachAssignments(season.id),
       ])
     : [[], []];
 
@@ -34,22 +37,25 @@ export default async function CoachesPage() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-text-primary text-xl font-bold">מאמנים</h1>
         <div className="flex items-center gap-3">
-          {activeSeason && (
-            <span className="text-text-muted text-sm">
-              שיוך לעונה: {activeSeason.name}
-            </span>
+          {season && (
+            <span className="text-text-muted text-sm">עונה: {season.name}</span>
           )}
-          <FormDialog triggerLabel="+ מאמן" title="מאמן חדש">
-            <CreateCoachForm />
-          </FormDialog>
+          {readOnly ? (
+            <Badge variant="muted">צפייה בלבד</Badge>
+          ) : (
+            <FormDialog triggerLabel="+ מאמן" title="מאמן חדש">
+              <CreateCoachForm />
+            </FormDialog>
+          )}
         </div>
       </div>
 
       <CoachList
         coaches={coaches}
-        seasonId={activeSeason?.id ?? null}
+        seasonId={readOnly ? null : (season?.id ?? null)}
         teams={teams}
         assignmentsByCoach={assignmentsByCoach}
+        readOnly={readOnly}
       />
     </div>
   );

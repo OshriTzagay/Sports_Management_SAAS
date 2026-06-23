@@ -14,11 +14,18 @@ import {
 import { EditTeamForm } from "./edit-team-form";
 import type { Team } from "./types";
 
-export function TeamList({ teams }: { teams: Team[] }) {
+export function TeamList({
+  teams,
+  readOnly = false,
+}: {
+  teams: Team[];
+  readOnly?: boolean;
+}) {
   const [selected, setSelected] = useState<Team | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const open = (team: Team) => {
+    if (readOnly) return;
     setSelected(team);
     dialogRef.current?.showModal();
   };
@@ -42,7 +49,7 @@ export function TeamList({ teams }: { teams: Team[] }) {
             <TableRow
               key={team.id}
               onClick={() => open(team)}
-              className="cursor-pointer"
+              className={readOnly ? undefined : "cursor-pointer"}
             >
               <TableCell className="text-text-primary font-medium">
                 {team.name}
@@ -55,11 +62,13 @@ export function TeamList({ teams }: { teams: Team[] }) {
         </TableBody>
       </Table>
 
-      <RowModal dialogRef={dialogRef} title="עריכת קבוצה" onClose={close}>
-        {selected && (
-          <EditTeamForm key={selected.id} team={selected} onClose={close} />
-        )}
-      </RowModal>
+      {!readOnly && (
+        <RowModal dialogRef={dialogRef} title="עריכת קבוצה" onClose={close}>
+          {selected && (
+            <EditTeamForm key={selected.id} team={selected} onClose={close} />
+          )}
+        </RowModal>
+      )}
     </>
   );
 }

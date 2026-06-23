@@ -32,6 +32,7 @@ interface PlayerListProps {
   seasonId: string | null;
   teams: Team[];
   teamByPlayer: Record<string, string>;
+  readOnly?: boolean;
 }
 
 export function PlayerList({
@@ -39,6 +40,7 @@ export function PlayerList({
   seasonId,
   teams,
   teamByPlayer,
+  readOnly = false,
 }: PlayerListProps) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Player | null>(null);
@@ -50,6 +52,7 @@ export function PlayerList({
   );
 
   const open = (player: Player) => {
+    if (readOnly) return;
     setSelected(player);
     dialogRef.current?.showModal();
   };
@@ -95,7 +98,7 @@ export function PlayerList({
               <TableRow
                 key={player.id}
                 onClick={() => open(player)}
-                className="cursor-pointer"
+                className={readOnly ? undefined : "cursor-pointer"}
               >
                 <TableCell className="text-text-primary font-medium">
                   {player.first_name} {player.last_name}
@@ -120,18 +123,20 @@ export function PlayerList({
         </Table>
       )}
 
-      <RowModal dialogRef={dialogRef} title="עריכת שחקן" onClose={close}>
-        {selected && (
-          <EditPlayerForm
-            key={selected.id}
-            player={selected}
-            seasonId={seasonId}
-            teams={teams}
-            currentTeamId={teamByPlayer[selected.id] ?? null}
-            onClose={close}
-          />
-        )}
-      </RowModal>
+      {!readOnly && (
+        <RowModal dialogRef={dialogRef} title="עריכת שחקן" onClose={close}>
+          {selected && (
+            <EditPlayerForm
+              key={selected.id}
+              player={selected}
+              seasonId={seasonId}
+              teams={teams}
+              currentTeamId={teamByPlayer[selected.id] ?? null}
+              onClose={close}
+            />
+          )}
+        </RowModal>
+      )}
     </div>
   );
 }

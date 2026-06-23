@@ -1,6 +1,7 @@
+import { Badge } from "@/components/ui/badge";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { requireUser } from "@/features/tenant-auth";
-import { getActiveSeason } from "@/features/seasons";
+import { getSelectedSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
 import { listPlayers, listSeasonAssignments } from "@/features/players";
 import { PlayerList } from "@/features/players/player-list";
@@ -9,15 +10,17 @@ import { CreatePlayerForm } from "@/features/players/create-player-form";
 export default async function PlayersPage() {
   await requireUser();
 
-  const [activeSeason, players] = await Promise.all([
-    getActiveSeason(),
+  const [season, players] = await Promise.all([
+    getSelectedSeason(),
     listPlayers(),
   ]);
 
-  const [teams, assignments] = activeSeason
+  const readOnly = season?.status === "closed";
+
+  const [teams, assignments] = season
     ? await Promise.all([
-        listTeams(activeSeason.id),
-        listSeasonAssignments(activeSeason.id),
+        listTeams(season.id),
+        listSeasonAssignments(season.id),
       ])
     : [[], []];
 
@@ -30,29 +33,32 @@ export default async function PlayersPage() {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-text-primary text-xl font-bold">שחקנים</h1>
         <div className="flex items-center gap-3">
-          {activeSeason && (
-            <span className="text-text-muted text-sm">
-              שיבוץ לעונה: {activeSeason.name}
-            </span>
+          {season && (
+            <span className="text-text-muted text-sm">עונה: {season.name}</span>
           )}
-          <FormDialog triggerLabel="+ שחקן" title="שחקן חדש">
-            <CreatePlayerForm />
-          </FormDialog>
+          {readOnly ? (
+            <Badge variant="muted">צפייה בלבד</Badge>
+          ) : (
+            <FormDialog triggerLabel="+ שחקן" title="שחקן חדש">
+              <CreatePlayerForm />
+            </FormDialog>
+          )}
         </div>
       </div>
 
-      {!activeSeason && (
+      {!season && (
         <p className="text-text-muted text-sm">
-          אין עונה פעילה — ניתן לנהל זהות שחקנים, אך השיבוץ לקבוצה יתאפשר לאחר
-          הפעלת עונה.
+          אין עונה — ניתן לנהל זהות שחקנים, אך השיבוץ לקבוצה יתאפשר לאחר יצירת
+          עונה.
         </p>
       )}
 
       <PlayerList
         players={players}
-        seasonId={activeSeason?.id ?? null}
+        seasonId={readOnly ? null : (season?.id ?? null)}
         teams={teams}
         teamByPlayer={teamByPlayer}
+        readOnly={readOnly}
       />
     </div>
   );

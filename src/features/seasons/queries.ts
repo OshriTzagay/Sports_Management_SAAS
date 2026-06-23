@@ -1,7 +1,11 @@
 import "server-only";
 
+import { cookies } from "next/headers";
+
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Season } from "./types";
+
+export const SEASON_COOKIE = "season_id";
 
 const COLUMNS =
   "id, club_id, name, starts_on, ends_on, is_active, status, created_at";
@@ -31,4 +35,26 @@ export async function getActiveSeason(): Promise<Season | null> {
 
   if (error) throw new Error(error.message);
   return (data as Season | null) ?? null;
+}
+
+/**
+ * העונה הנבחרת לתצוגה — לפי cookie (מתג העונה), עם נפילה לעונה הפעילה.
+ * ה-cookie מאומת מול RLS (מחזיר רק עונה של המועדון); אחרת ברירת מחדל = פעילה.
+ */
+export async function getSelectedSeason(): Promise<Season | null> {
+  const cookieStore = await cookies();
+  const cookieId = cookieStore.get(SEASON_COOKIE)?.value;
+
+  if (cookieId) {
+    const supabase = await createServerSupabaseClient();
+    const { data } = await supabase
+      .from("seasons")
+      .select(COLUMNS)
+      .eq("id", cookieId)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (data) return data as Season;
+  }
+
+  return getActiveSeason();
 }

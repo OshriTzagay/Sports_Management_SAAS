@@ -3,7 +3,7 @@ import { type ReactNode } from "react";
 import { TenantSidebar } from "@/components/tenant-sidebar";
 import { BrandingLogoProvider } from "@/components/branding-logo-provider";
 import { requireUser } from "@/features/tenant-auth";
-import { getActiveSeason } from "@/features/seasons";
+import { listSeasons, getSelectedSeason } from "@/features/seasons";
 import {
   getClubBranding,
   brandStyleVars,
@@ -17,8 +17,9 @@ export default async function TenantAppLayout({
   children: ReactNode;
 }) {
   const user = await requireUser();
-  const [activeSeason, branding] = await Promise.all([
-    getActiveSeason(),
+  const [seasons, selectedSeason, branding] = await Promise.all([
+    listSeasons(),
+    getSelectedSeason(),
     getClubBranding(),
   ]);
   const logoUrl = logoPublicUrl(branding?.logo_path ?? null);
@@ -30,7 +31,8 @@ export default async function TenantAppLayout({
     >
       <TenantSidebar
         userEmail={user.email}
-        activeSeasonName={activeSeason?.name ?? null}
+        seasons={seasons}
+        selectedSeasonId={selectedSeason?.id ?? null}
         clubName={branding?.display_name ?? null}
         logoUrl={logoUrl}
       />

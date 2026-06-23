@@ -38,6 +38,7 @@ interface CoachListProps {
   seasonId: string | null;
   teams: Team[];
   assignmentsByCoach: Record<string, CoachAssignment[]>;
+  readOnly?: boolean;
 }
 
 export function CoachList({
@@ -45,11 +46,13 @@ export function CoachList({
   seasonId,
   teams,
   assignmentsByCoach,
+  readOnly = false,
 }: CoachListProps) {
   const [selected, setSelected] = useState<Coach | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const open = (coach: Coach) => {
+    if (readOnly) return;
     setSelected(coach);
     dialogRef.current?.showModal();
   };
@@ -78,7 +81,7 @@ export function CoachList({
               <TableRow
                 key={coach.id}
                 onClick={() => open(coach)}
-                className="cursor-pointer"
+                className={readOnly ? undefined : "cursor-pointer"}
               >
                 <TableCell className="text-text-primary font-medium">
                   {coach.first_name} {coach.last_name}
@@ -118,26 +121,32 @@ export function CoachList({
         </TableBody>
       </Table>
 
-      <RowModal dialogRef={dialogRef} title="עריכת מאמן" onClose={close}>
-        {selected && (
-          <div className="flex flex-col gap-4">
-            <EditCoachForm key={selected.id} coach={selected} onClose={close} />
-            {seasonId && (
-              <div className="border-border flex flex-col gap-2 border-t pt-4">
-                <span className="text-text-muted text-xs">
-                  שיוך לקבוצות (בעונה הפעילה)
-                </span>
-                <CoachTeamAssignments
-                  coachId={selected.id}
-                  seasonId={seasonId}
-                  teams={teams}
-                  assignments={assignmentsByCoach[selected.id] ?? []}
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </RowModal>
+      {!readOnly && (
+        <RowModal dialogRef={dialogRef} title="עריכת מאמן" onClose={close}>
+          {selected && (
+            <div className="flex flex-col gap-4">
+              <EditCoachForm
+                key={selected.id}
+                coach={selected}
+                onClose={close}
+              />
+              {seasonId && (
+                <div className="border-border flex flex-col gap-2 border-t pt-4">
+                  <span className="text-text-muted text-xs">
+                    שיוך לקבוצות (בעונה הפעילה)
+                  </span>
+                  <CoachTeamAssignments
+                    coachId={selected.id}
+                    seasonId={seasonId}
+                    teams={teams}
+                    assignments={assignmentsByCoach[selected.id] ?? []}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </RowModal>
+      )}
     </>
   );
 }

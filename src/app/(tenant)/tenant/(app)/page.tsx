@@ -1,12 +1,12 @@
 import { MetricCard } from "@/components/ui/metric-card";
 import { requireUser } from "@/features/tenant-auth";
-import { getActiveSeason } from "@/features/seasons";
+import { getSelectedSeason } from "@/features/seasons";
 import { getClubStats } from "@/features/dashboard";
 
 export default async function TenantDashboard() {
   await requireUser();
-  const activeSeason = await getActiveSeason();
-  const stats = await getClubStats(activeSeason?.id ?? null);
+  const season = await getSelectedSeason();
+  const stats = await getClubStats(season?.id ?? null);
 
   const unassigned = Math.max(stats.activePlayers - stats.assignedPlayers, 0);
 
@@ -15,7 +15,7 @@ export default async function TenantDashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-text-primary text-xl font-bold">לוח הבקרה</h1>
         <span className="text-text-muted text-sm">
-          עונה פעילה: {activeSeason?.name ?? "—"}
+          עונה: {season?.name ?? "—"}
         </span>
       </div>
 
@@ -26,9 +26,9 @@ export default async function TenantDashboard() {
         <MetricCard label="שחקנים ללא שיבוץ" value={unassigned} />
       </div>
 
-      {!activeSeason && (
+      {!season && (
         <p className="text-text-muted text-sm">
-          אין עונה פעילה — חלק מהמדדים יתעדכנו לאחר הפעלת עונה.
+          אין עונה — חלק מהמדדים יתעדכנו לאחר יצירת עונה.
         </p>
       )}
     </div>

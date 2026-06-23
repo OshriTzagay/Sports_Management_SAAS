@@ -1,24 +1,25 @@
 import Link from "next/link";
 
+import { Badge } from "@/components/ui/badge";
 import { FormDialog } from "@/components/ui/form-dialog";
 import { requireUser } from "@/features/tenant-auth";
-import { getActiveSeason } from "@/features/seasons";
+import { getSelectedSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
 import { TeamList } from "@/features/teams/team-list";
 import { CreateTeamForm } from "@/features/teams/create-team-form";
 
 export default async function TeamsPage() {
   await requireUser();
-  const activeSeason = await getActiveSeason();
+  const season = await getSelectedSeason();
 
-  if (!activeSeason) {
+  if (!season) {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="text-text-primary text-xl font-bold">קבוצות</h1>
         <p className="text-text-muted text-sm">
-          אין עונה פעילה.{" "}
+          אין עונה.{" "}
           <Link href="/seasons" className="text-primary-500 hover:underline">
-            צור והפעל עונה
+            צור עונה
           </Link>{" "}
           כדי לנהל קבוצות.
         </p>
@@ -26,22 +27,25 @@ export default async function TeamsPage() {
     );
   }
 
-  const teams = await listTeams(activeSeason.id);
+  const readOnly = season.status === "closed";
+  const teams = await listTeams(season.id);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-text-primary text-xl font-bold">קבוצות</h1>
         <div className="flex items-center gap-3">
-          <span className="text-text-muted text-sm">
-            עונה: {activeSeason.name}
-          </span>
-          <FormDialog triggerLabel="+ קבוצה" title="קבוצה חדשה">
-            <CreateTeamForm seasonId={activeSeason.id} />
-          </FormDialog>
+          <span className="text-text-muted text-sm">עונה: {season.name}</span>
+          {readOnly ? (
+            <Badge variant="muted">צפייה בלבד</Badge>
+          ) : (
+            <FormDialog triggerLabel="+ קבוצה" title="קבוצה חדשה">
+              <CreateTeamForm seasonId={season.id} />
+            </FormDialog>
+          )}
         </div>
       </div>
-      <TeamList teams={teams} />
+      <TeamList teams={teams} readOnly={readOnly} />
     </div>
   );
 }
