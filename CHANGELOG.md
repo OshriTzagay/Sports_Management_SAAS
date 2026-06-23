@@ -6,6 +6,12 @@
 
 ### 2026-06-19
 
+- **`fix(ui): stale data after mutations + layout/UX improvements`** — תיקון
+  שורשי: `revalidatePath` השתמש בנתיבי המשתמש (`/teams`...) במקום בנתיב המרונדר
+  (`/tenant/...`) בגלל ה-rewrite — שינויים נשמרו אך הופיעו רק אחרי רענון. עכשיו
+  `revalidatePath("/tenant","layout")`. + `router.refresh()` למיתוג/לוגו (החלה
+  מיידית), אזור תוכן רחב (עד 1600px), **סייד-בר מתקפל** (נשמר ב-localStorage),
+  **חיפוש** בטבלת השחקנים, ותצוגה מקדימה ללוגו הנבחר.
 - **`feat(ui): create-in-modal flows + loaders + micro-interactions`** — רכיב
   `FormDialog` (מודאל ליצירה, נסגר אוטומטית בהצלחה); יצירת עונה/קבוצה/שחקן/מאמן
   עברה לכפתור "+" שפותח מודאל (במקום טופס מתחת לטבלה); רכיב `Spinner` + loader

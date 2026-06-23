@@ -46,7 +46,7 @@ export async function updateBrandingAction(
   });
   if (error) return { error: error.message };
 
-  revalidatePath("/", "layout");
+  revalidatePath("/tenant", "layout");
   return { error: null, ok: true };
 }
 
@@ -86,6 +86,6 @@ export async function uploadLogoAction(
     .upsert({ club_id: user.club_id, logo_path: path });
   if (saveError) return { error: saveError.message };
 
-  revalidatePath("/", "layout");
+  revalidatePath("/tenant", "layout");
   return { error: null, ok: true };
 }

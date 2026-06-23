@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,13 @@ export function BrandingForm({ branding }: { branding: ClubBranding | null }) {
     initialState,
   );
   const [color, setColor] = useState(branding?.primary_color ?? "#2e8b57");
+  const router = useRouter();
+  const wasPending = useRef(false);
+
+  useEffect(() => {
+    if (wasPending.current && !pending && !state.error) router.refresh();
+    wasPending.current = pending;
+  }, [pending, state.error, router]);
 
   const tintBg = `color-mix(in oklab, ${color}, white 86%)`;
   const tintText = `color-mix(in oklab, ${color}, black 32%)`;

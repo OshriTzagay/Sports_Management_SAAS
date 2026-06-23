@@ -43,7 +43,7 @@ export async function createTeamAction(
   });
   if (error) return { error: error.message };
 
-  revalidatePath("/teams");
+  revalidatePath("/tenant", "layout");
   return { error: null };
 }
 
@@ -59,5 +59,5 @@ export async function deleteTeamAction(formData: FormData): Promise<void> {
     .eq("id", teamId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/teams");
+  revalidatePath("/tenant", "layout");
 }

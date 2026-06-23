@@ -48,7 +48,7 @@ export async function createPlayerAction(
   });
   if (error) return { error: error.message };
 
-  revalidatePath("/players");
+  revalidatePath("/tenant", "layout");
   return { error: null };
 }
 
@@ -72,7 +72,7 @@ export async function setPlayerStatusAction(formData: FormData): Promise<void> {
     .eq("id", parsed.playerId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/players");
+  revalidatePath("/tenant", "layout");
 }
 
 /** שיבוץ שחקן לקבוצה בעונה (teamId ריק = הסרת שיבוץ). שיבוץ אחד לעונה. */
@@ -113,5 +113,5 @@ export async function assignPlayerToTeamAction(
     if (insertError) throw new Error(insertError.message);
   }
 
-  revalidatePath("/players");
+  revalidatePath("/tenant", "layout");
 }

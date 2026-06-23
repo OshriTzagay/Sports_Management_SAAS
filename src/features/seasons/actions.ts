@@ -65,7 +65,7 @@ export async function createSeasonAction(
     }
   }
 
-  revalidatePath("/seasons");
+  revalidatePath("/tenant", "layout");
   return { error: null };
 }
 
@@ -80,7 +80,7 @@ export async function activateSeasonAction(formData: FormData): Promise<void> {
   });
   if (error) throw new Error(error.message);
 
-  revalidatePath("/seasons");
+  revalidatePath("/tenant", "layout");
 }
 
 /** סגירת עונה (read-only). */
@@ -95,5 +95,5 @@ export async function closeSeasonAction(formData: FormData): Promise<void> {
     .eq("id", seasonId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/seasons");
+  revalidatePath("/tenant", "layout");
 }

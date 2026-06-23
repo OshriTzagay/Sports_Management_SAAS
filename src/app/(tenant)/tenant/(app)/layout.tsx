@@ -32,8 +32,8 @@ export default async function TenantAppLayout({
         clubName={branding?.display_name ?? null}
         logoUrl={logoPublicUrl(branding?.logo_path ?? null)}
       />
-      <main className="flex-1 p-6 lg:p-8">
-        <div className="mx-auto max-w-5xl">{children}</div>
+      <main className="min-w-0 flex-1 p-5 lg:p-7">
+        <div className="mx-auto w-full max-w-[1600px]">{children}</div>
       </main>
     </div>
   );

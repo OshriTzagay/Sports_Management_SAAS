@@ -51,7 +51,7 @@ export async function createCoachAction(
   });
   if (error) return { error: error.message };
 
-  revalidatePath("/coaches");
+  revalidatePath("/tenant", "layout");
   return { error: null };
 }
 
@@ -75,7 +75,7 @@ export async function setCoachStatusAction(formData: FormData): Promise<void> {
     .eq("id", parsed.coachId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/coaches");
+  revalidatePath("/tenant", "layout");
 }
 
 /** שיוך מאמן לקבוצה בעונה עם תפקיד. */
@@ -107,7 +107,7 @@ export async function addCoachAssignmentAction(
   });
   if (error) throw new Error(error.message);
 
-  revalidatePath("/coaches");
+  revalidatePath("/tenant", "layout");
 }
 
 /** הסרת שיוך מאמן↔קבוצה (soft-delete). */
@@ -124,5 +124,5 @@ export async function removeCoachAssignmentAction(
     .eq("id", assignmentId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/coaches");
+  revalidatePath("/tenant", "layout");
 }
