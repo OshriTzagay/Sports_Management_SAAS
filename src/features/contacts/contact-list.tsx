@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { RowModal } from "@/components/ui/row-modal";
@@ -30,15 +30,14 @@ export function ContactList({ contacts }: { contacts: Contact[] }) {
   };
   const close = useCallback(() => dialogRef.current?.close(), []);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return contacts;
-    return contacts.filter((c) =>
-      `${fullName(c)} ${c.phone ?? ""} ${c.email ?? ""}`
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [contacts, query]);
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? contacts.filter((c) =>
+        `${c.first_name} ${c.last_name ?? ""} ${c.phone ?? ""} ${c.email ?? ""}`
+          .toLowerCase()
+          .includes(q),
+      )
+    : contacts;
 
   return (
     <div className="flex flex-col gap-3">
