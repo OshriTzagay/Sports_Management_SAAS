@@ -140,6 +140,21 @@ export async function closeSeasonAction(formData: FormData): Promise<void> {
   revalidatePath("/tenant", "layout");
 }
 
+/** פתיחה מחדש של עונה סגורה (מחזיר ל-active). */
+export async function reopenSeasonAction(formData: FormData): Promise<void> {
+  await requireUser();
+  const seasonId = z.string().uuid().parse(formData.get("seasonId"));
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("seasons")
+    .update({ status: "active" })
+    .eq("id", seasonId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/tenant", "layout");
+}
+
 /** מתג העונה הגלובלי — שומר את העונה הנבחרת ב-cookie לכל המסכים. */
 export async function selectSeasonAction(formData: FormData): Promise<void> {
   await requireUser();

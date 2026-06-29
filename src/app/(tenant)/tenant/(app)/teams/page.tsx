@@ -27,7 +27,7 @@ export default async function TeamsPage() {
     );
   }
 
-  const readOnly = season.status === "closed";
+  const readOnly = !season.is_active;
   const teams = await listTeams(season.id);
 
   return (

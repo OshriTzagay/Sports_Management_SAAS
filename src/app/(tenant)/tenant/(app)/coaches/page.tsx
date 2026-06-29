@@ -16,7 +16,7 @@ export default async function CoachesPage() {
     listCoaches(),
   ]);
 
-  const readOnly = season?.status === "closed";
+  const readOnly = season ? !season.is_active : false;
 
   const [teams, assignments] = season
     ? await Promise.all([
