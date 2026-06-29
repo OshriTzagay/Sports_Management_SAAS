@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
+  Contact,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -34,6 +35,7 @@ const NAV: NavItem[] = [
   { href: "/teams", label: "קבוצות", icon: Users },
   { href: "/players", label: "שחקנים", icon: UserRound },
   { href: "/coaches", label: "מאמנים", icon: ClipboardList },
+  { href: "/contacts", label: "אנשי קשר", icon: Contact },
   { href: "/settings", label: "הגדרות", icon: Settings },
 ];
 
