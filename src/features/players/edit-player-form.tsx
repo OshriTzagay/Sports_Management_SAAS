@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Spinner } from "@/components/ui/spinner";
 import type { Team } from "@/features/teams";
 import { updatePlayerAction, type CreatePlayerState } from "./actions";
@@ -32,6 +33,7 @@ export function EditPlayerForm({
     updatePlayerAction,
     initialState,
   );
+  const [teamId, setTeamId] = useState(currentTeamId ?? "");
   const wasPending = useRef(false);
 
   useEffect(() => {
@@ -79,18 +81,18 @@ export function EditPlayerForm({
       {seasonId && (
         <label className="text-text-muted flex flex-col gap-1 text-xs">
           קבוצה (בעונה הפעילה)
-          <select
+          <SearchableSelect
             name="teamId"
-            defaultValue={currentTeamId ?? ""}
-            className={selectClass}
-          >
-            <option value="">— ללא —</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
-          </select>
+            value={teamId}
+            onChange={setTeamId}
+            options={teams.map((team) => ({
+              value: team.id,
+              label: team.name,
+            }))}
+            emptyLabel="— ללא —"
+            placeholder="בחירת קבוצה…"
+            searchPlaceholder="חיפוש קבוצה…"
+          />
         </label>
       )}
 

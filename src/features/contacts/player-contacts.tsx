@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   addPlayerContactAction,
   removePlayerContactAction,
@@ -18,7 +19,7 @@ import {
 
 const RELATIONSHIPS = Object.keys(RELATIONSHIP_LABELS) as Relationship[];
 const selectClass =
-  "rounded-md border border-border bg-bg-surface px-2 py-1 text-xs text-text-primary";
+  "h-10 shrink-0 rounded-md border border-border bg-bg-surface px-2 text-sm text-text-primary";
 
 export function PlayerContacts({
   playerId,
@@ -34,6 +35,7 @@ export function PlayerContacts({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [contactId, setContactId] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
   const linkedIds = new Set(links.map((l) => l.contact_id));
@@ -52,6 +54,7 @@ export function PlayerContacts({
       }
       setError(null);
       formRef.current?.reset();
+      setContactId("");
       router.refresh();
     });
   }
@@ -128,21 +131,18 @@ export function PlayerContacts({
       {available.length > 0 ? (
         <form ref={formRef} action={add} className="flex gap-1">
           <input type="hidden" name="playerId" value={playerId} />
-          <select
+          <SearchableSelect
             name="contactId"
-            required
-            defaultValue=""
-            className={selectClass}
-          >
-            <option value="" disabled>
-              איש קשר…
-            </option>
-            {available.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.first_name} {c.last_name ?? ""}
-              </option>
-            ))}
-          </select>
+            value={contactId}
+            onChange={setContactId}
+            options={available.map((c) => ({
+              value: c.id,
+              label: `${c.first_name} ${c.last_name ?? ""}`.trim(),
+            }))}
+            placeholder="איש קשר…"
+            searchPlaceholder="חיפוש איש קשר…"
+            className="flex-1"
+          />
           <select
             name="relationship"
             defaultValue="father"
@@ -156,9 +156,9 @@ export function PlayerContacts({
           </select>
           <Button
             type="submit"
-            size="sm"
             variant="secondary"
             disabled={pending}
+            className="shrink-0"
           >
             קשר
           </Button>
