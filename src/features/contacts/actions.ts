@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireUser } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { toUserMessage } from "@/lib/db-error";
 
 const optionalText = z
   .string()
@@ -101,6 +102,94 @@ export async function deleteContactAction(formData: FormData): Promise<void> {
     .from("contacts")
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", contactId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/tenant", "layout");
+}
+
+const relationshipEnum = z.enum([
+  "father",
+  "mother",
+  "guardian",
+  "self",
+  "other",
+]);
+
+/** קישור איש קשר קיים לשחקן עם קרבה. מחזיר הודעת שגיאה (למשל קישור כפול). */
+export async function addPlayerContactAction(
+  formData: FormData,
+): Promise<{ error: string | null }> {
+  const user = await requireUser();
+  const parsed = z
+    .object({
+      playerId: z.string().uuid(),
+      contactId: z.string().uuid(),
+      relationship: relationshipEnum,
+    })
+    .safeParse({
+      playerId: formData.get("playerId"),
+      contactId: formData.get("contactId"),
+      relationship: formData.get("relationship"),
+    });
+  if (!parsed.success) return { error: "קלט לא תקין" };
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.from("player_contacts").insert({
+    club_id: user.club_id,
+    player_id: parsed.data.playerId,
+    contact_id: parsed.data.contactId,
+    relationship: parsed.data.relationship,
+  });
+  if (error) {
+    return { error: toUserMessage(error, "איש הקשר כבר מקושר לשחקן") };
+  }
+
+  revalidatePath("/tenant", "layout");
+  return { error: null };
+}
+
+/** הסרת קישור איש-קשר↔שחקן (soft-delete). */
+export async function removePlayerContactAction(
+  formData: FormData,
+): Promise<void> {
+  await requireUser();
+  const linkId = z.string().uuid().parse(formData.get("linkId"));
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("player_contacts")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", linkId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/tenant", "layout");
+}
+
+/** קביעת איש הקשר לחיוב לשחקן (יחיד — מבטל את הקודם). */
+export async function setBillingContactAction(
+  formData: FormData,
+): Promise<void> {
+  await requireUser();
+  const parsed = z
+    .object({ playerId: z.string().uuid(), linkId: z.string().uuid() })
+    .parse({
+      playerId: formData.get("playerId"),
+      linkId: formData.get("linkId"),
+    });
+
+  const supabase = await createServerSupabaseClient();
+  // מבטלים את כל החיובים של השחקן ואז מסמנים את הנבחר — כדי לא להפר את האילוץ.
+  const { error: clearError } = await supabase
+    .from("player_contacts")
+    .update({ is_billing_contact: false })
+    .eq("player_id", parsed.playerId)
+    .is("deleted_at", null);
+  if (clearError) throw new Error(clearError.message);
+
+  const { error } = await supabase
+    .from("player_contacts")
+    .update({ is_billing_contact: true })
+    .eq("id", parsed.linkId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/tenant", "layout");

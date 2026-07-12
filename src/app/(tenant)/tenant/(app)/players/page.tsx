@@ -4,15 +4,19 @@ import { requireUser } from "@/features/tenant-auth";
 import { getSelectedSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
 import { listPlayers, listSeasonAssignments } from "@/features/players";
+import { listContacts, listPlayerContacts } from "@/features/contacts";
+import type { PlayerContactLink } from "@/features/contacts";
 import { PlayerList } from "@/features/players/player-list";
 import { CreatePlayerForm } from "@/features/players/create-player-form";
 
 export default async function PlayersPage() {
   await requireUser();
 
-  const [season, players] = await Promise.all([
+  const [season, players, contacts, contactLinks] = await Promise.all([
     getSelectedSeason(),
     listPlayers(),
+    listContacts(),
+    listPlayerContacts(),
   ]);
 
   const readOnly = season ? !season.is_active : false;
@@ -27,6 +31,13 @@ export default async function PlayersPage() {
   const teamByPlayer = Object.fromEntries(
     assignments.map((a) => [a.player_id, a.team_id]),
   );
+
+  const contactsByPlayer = contactLinks.reduce<
+    Record<string, PlayerContactLink[]>
+  >((acc, link) => {
+    (acc[link.player_id] ??= []).push(link);
+    return acc;
+  }, {});
 
   return (
     <div className="flex flex-col gap-6">
@@ -58,6 +69,8 @@ export default async function PlayersPage() {
         seasonId={readOnly ? null : (season?.id ?? null)}
         teams={teams}
         teamByPlayer={teamByPlayer}
+        contacts={contacts}
+        contactsByPlayer={contactsByPlayer}
         readOnly={readOnly}
       />
     </div>

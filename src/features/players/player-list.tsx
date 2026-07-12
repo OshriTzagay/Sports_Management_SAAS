@@ -14,6 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Team } from "@/features/teams";
+import type { Contact, PlayerContactLink } from "@/features/contacts";
+import { PlayerContacts } from "@/features/contacts/player-contacts";
 import { EditPlayerForm } from "./edit-player-form";
 import { PLAYER_STATUS_LABELS, type Player, type PlayerStatus } from "./types";
 
@@ -32,6 +34,8 @@ interface PlayerListProps {
   seasonId: string | null;
   teams: Team[];
   teamByPlayer: Record<string, string>;
+  contacts: Contact[];
+  contactsByPlayer: Record<string, PlayerContactLink[]>;
   readOnly?: boolean;
 }
 
@@ -40,6 +44,8 @@ export function PlayerList({
   seasonId,
   teams,
   teamByPlayer,
+  contacts,
+  contactsByPlayer,
   readOnly = false,
 }: PlayerListProps) {
   const [query, setQuery] = useState("");
@@ -126,14 +132,24 @@ export function PlayerList({
       {!readOnly && (
         <RowModal dialogRef={dialogRef} title="עריכת שחקן" onClose={close}>
           {selected && (
-            <EditPlayerForm
-              key={selected.id}
-              player={selected}
-              seasonId={seasonId}
-              teams={teams}
-              currentTeamId={teamByPlayer[selected.id] ?? null}
-              onClose={close}
-            />
+            <div className="flex flex-col gap-4">
+              <EditPlayerForm
+                key={selected.id}
+                player={selected}
+                seasonId={seasonId}
+                teams={teams}
+                currentTeamId={teamByPlayer[selected.id] ?? null}
+                onClose={close}
+              />
+              <div className="border-border flex flex-col gap-2 border-t pt-4">
+                <span className="text-text-muted text-xs">אנשי קשר</span>
+                <PlayerContacts
+                  playerId={selected.id}
+                  links={contactsByPlayer[selected.id] ?? []}
+                  contacts={contacts}
+                />
+              </div>
+            </div>
           )}
         </RowModal>
       )}
