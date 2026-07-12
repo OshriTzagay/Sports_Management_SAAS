@@ -2,17 +2,30 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { RowModal } from "@/components/ui/row-modal";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { EditTeamForm } from "./edit-team-form";
 import type { Team } from "./types";
+
+const columns: DataTableColumn<Team>[] = [
+  {
+    key: "name",
+    header: "קבוצה",
+    cell: (t) => (
+      <span className="text-text-primary font-medium">{t.name}</span>
+    ),
+    sortValue: (t) => t.name,
+  },
+  {
+    key: "age",
+    header: "קטגוריית גיל",
+    cell: (t) => (
+      <span className="text-text-muted">{t.age_category ?? "—"}</span>
+    ),
+    sortValue: (t) => t.age_category ?? "",
+    filter: { label: "קטגוריה", value: (t) => t.age_category ?? "" },
+  },
+];
 
 export function TeamList({
   teams,
@@ -31,36 +44,16 @@ export function TeamList({
   };
   const close = useCallback(() => dialogRef.current?.close(), []);
 
-  if (teams.length === 0) {
-    return <p className="text-text-muted text-sm">אין קבוצות בעונה זו.</p>;
-  }
-
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>קבוצה</TableHead>
-            <TableHead>קטגוריית גיל</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {teams.map((team) => (
-            <TableRow
-              key={team.id}
-              onClick={() => open(team)}
-              className={readOnly ? undefined : "cursor-pointer"}
-            >
-              <TableCell className="text-text-primary font-medium">
-                {team.name}
-              </TableCell>
-              <TableCell className="text-text-muted">
-                {team.age_category ?? "—"}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable
+        columns={columns}
+        rows={teams}
+        rowKey={(t) => t.id}
+        onRowClick={readOnly ? undefined : open}
+        searchPlaceholder="חיפוש קבוצה…"
+        emptyMessage="אין קבוצות בעונה זו."
+      />
 
       {!readOnly && (
         <RowModal dialogRef={dialogRef} title="עריכת קבוצה" onClose={close}>

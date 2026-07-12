@@ -2,16 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 
-import { Input } from "@/components/ui/input";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { RowModal } from "@/components/ui/row-modal";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { EditContactForm } from "./edit-contact-form";
 import type { Contact } from "./types";
 
@@ -19,8 +11,30 @@ function fullName(c: Contact): string {
   return [c.first_name, c.last_name].filter(Boolean).join(" ");
 }
 
+const columns: DataTableColumn<Contact>[] = [
+  {
+    key: "name",
+    header: "שם",
+    cell: (c) => (
+      <span className="text-text-primary font-medium">{fullName(c)}</span>
+    ),
+    sortValue: (c) => fullName(c),
+  },
+  {
+    key: "phone",
+    header: "טלפון",
+    cell: (c) => <span className="text-text-muted">{c.phone ?? "—"}</span>,
+    sortValue: (c) => c.phone ?? "",
+  },
+  {
+    key: "email",
+    header: "אימייל",
+    cell: (c) => <span className="text-text-muted">{c.email ?? "—"}</span>,
+    sortValue: (c) => c.email ?? "",
+  },
+];
+
 export function ContactList({ contacts }: { contacts: Contact[] }) {
-  const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Contact | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -30,59 +44,19 @@ export function ContactList({ contacts }: { contacts: Contact[] }) {
   };
   const close = useCallback(() => dialogRef.current?.close(), []);
 
-  const q = query.trim().toLowerCase();
-  const filtered = q
-    ? contacts.filter((c) =>
-        `${c.first_name} ${c.last_name ?? ""} ${c.phone ?? ""} ${c.email ?? ""}`
-          .toLowerCase()
-          .includes(q),
-      )
-    : contacts;
-
   return (
-    <div className="flex flex-col gap-3">
-      <Input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="חיפוש לפי שם / טלפון / מייל…"
-        className="max-w-xs"
+    <>
+      <DataTable
+        columns={columns}
+        rows={contacts}
+        rowKey={(c) => c.id}
+        onRowClick={open}
+        searchAccessor={(c) =>
+          `${c.first_name} ${c.last_name ?? ""} ${c.phone ?? ""} ${c.email ?? ""}`
+        }
+        searchPlaceholder="חיפוש לפי שם / טלפון / מייל…"
+        emptyMessage="עדיין אין אנשי קשר."
       />
-
-      {contacts.length === 0 ? (
-        <p className="text-text-muted text-sm">עדיין אין אנשי קשר.</p>
-      ) : filtered.length === 0 ? (
-        <p className="text-text-muted text-sm">לא נמצאו תוצאות.</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>שם</TableHead>
-              <TableHead>טלפון</TableHead>
-              <TableHead>אימייל</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((contact) => (
-              <TableRow
-                key={contact.id}
-                onClick={() => open(contact)}
-                className="cursor-pointer"
-              >
-                <TableCell className="text-text-primary font-medium">
-                  {fullName(contact)}
-                </TableCell>
-                <TableCell className="text-text-muted">
-                  {contact.phone ?? "—"}
-                </TableCell>
-                <TableCell className="text-text-muted">
-                  {contact.email ?? "—"}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
 
       <RowModal dialogRef={dialogRef} title="עריכת איש קשר" onClose={close}>
         {selected && (
@@ -93,6 +67,6 @@ export function ContactList({ contacts }: { contacts: Contact[] }) {
           />
         )}
       </RowModal>
-    </div>
+    </>
   );
 }

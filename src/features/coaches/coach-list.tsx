@@ -3,15 +3,8 @@
 import { useCallback, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { RowModal } from "@/components/ui/row-modal";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { Team } from "@/features/teams";
 import { CoachTeamAssignments } from "./coach-team-assignments";
 import { EditCoachForm } from "./edit-coach-form";
@@ -58,68 +51,77 @@ export function CoachList({
   };
   const close = useCallback(() => dialogRef.current?.close(), []);
 
-  if (coaches.length === 0) {
-    return <p className="text-text-muted text-sm">עדיין אין מאמנים.</p>;
-  }
+  const columns: DataTableColumn<Coach>[] = [
+    {
+      key: "name",
+      header: "שם",
+      cell: (c) => (
+        <span className="text-text-primary font-medium">
+          {c.first_name} {c.last_name}
+        </span>
+      ),
+      sortValue: (c) => `${c.first_name} ${c.last_name}`,
+    },
+    {
+      key: "phone",
+      header: "טלפון",
+      cell: (c) => <span className="text-text-muted">{c.phone ?? "—"}</span>,
+      sortValue: (c) => c.phone ?? "",
+    },
+    {
+      key: "license",
+      header: "תוקף רישיון",
+      cell: (c) => <LicenseCell expiry={c.license_expiry} />,
+      sortValue: (c) => c.license_expiry ?? "",
+    },
+    {
+      key: "teams",
+      header: "קבוצות (עונה)",
+      cell: (c) => {
+        const assignments = assignmentsByCoach[c.id] ?? [];
+        if (assignments.length === 0)
+          return <span className="text-text-muted">—</span>;
+        return (
+          <div className="flex flex-wrap gap-1">
+            {assignments.map((a) => (
+              <span
+                key={a.id}
+                className="bg-primary-50 text-primary-700 rounded-sm px-2 py-0.5 text-xs"
+              >
+                {a.team_name} · {COACH_ROLE_LABELS[a.role]}
+              </span>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      key: "status",
+      header: "סטטוס",
+      align: "end",
+      cell: (c) => (
+        <Badge variant={c.status === "active" ? "success" : "muted"}>
+          {COACH_STATUS_LABELS[c.status]}
+        </Badge>
+      ),
+      sortValue: (c) => COACH_STATUS_LABELS[c.status],
+      filter: { label: "סטטוס", value: (c) => COACH_STATUS_LABELS[c.status] },
+    },
+  ];
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>שם</TableHead>
-            <TableHead>טלפון</TableHead>
-            <TableHead>תוקף רישיון</TableHead>
-            <TableHead>קבוצות (עונה)</TableHead>
-            <TableHead className="text-end">סטטוס</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {coaches.map((coach) => {
-            const assignments = assignmentsByCoach[coach.id] ?? [];
-            return (
-              <TableRow
-                key={coach.id}
-                onClick={() => open(coach)}
-                className={readOnly ? undefined : "cursor-pointer"}
-              >
-                <TableCell className="text-text-primary font-medium">
-                  {coach.first_name} {coach.last_name}
-                </TableCell>
-                <TableCell className="text-text-muted">
-                  {coach.phone ?? "—"}
-                </TableCell>
-                <TableCell>
-                  <LicenseCell expiry={coach.license_expiry} />
-                </TableCell>
-                <TableCell>
-                  {assignments.length === 0 ? (
-                    <span className="text-text-muted">—</span>
-                  ) : (
-                    <div className="flex flex-wrap gap-1">
-                      {assignments.map((a) => (
-                        <span
-                          key={a.id}
-                          className="bg-primary-50 text-primary-700 rounded-sm px-2 py-0.5 text-xs"
-                        >
-                          {a.team_name} · {COACH_ROLE_LABELS[a.role]}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell className="text-end">
-                  <Badge
-                    variant={coach.status === "active" ? "success" : "muted"}
-                  >
-                    {COACH_STATUS_LABELS[coach.status]}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+      <DataTable
+        columns={columns}
+        rows={coaches}
+        rowKey={(c) => c.id}
+        onRowClick={readOnly ? undefined : open}
+        searchAccessor={(c) =>
+          `${c.first_name} ${c.last_name} ${c.phone ?? ""}`
+        }
+        searchPlaceholder="חיפוש מאמן…"
+        emptyMessage="עדיין אין מאמנים."
+      />
 
       {!readOnly && (
         <RowModal dialogRef={dialogRef} title="עריכת מאמן" onClose={close}>

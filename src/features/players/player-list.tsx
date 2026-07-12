@@ -1,18 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { RowModal } from "@/components/ui/row-modal";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { Team } from "@/features/teams";
 import type { Contact, PlayerContactLink } from "@/features/contacts";
 import { PlayerContacts } from "@/features/contacts/player-contacts";
@@ -49,14 +41,14 @@ export function PlayerList({
   contactsByPlayer,
   readOnly = false,
 }: PlayerListProps) {
-  const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Player | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  const teamName = useMemo(
-    () => Object.fromEntries(teams.map((t) => [t.id, t.name])),
-    [teams],
-  );
+  const teamName = Object.fromEntries(teams.map((t) => [t.id, t.name]));
+  const teamOf = (p: Player) => teamName[teamByPlayer[p.id] ?? ""] ?? "";
+  const needsGuardian = (p: Player) =>
+    isMinor(p.birth_date) &&
+    !(contactsByPlayer[p.id] ?? []).some((l) => l.relationship !== "self");
 
   const open = (player: Player) => {
     if (readOnly) return;
@@ -65,85 +57,75 @@ export function PlayerList({
   };
   const close = useCallback(() => dialogRef.current?.close(), []);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return players;
-    return players.filter((p) =>
-      `${p.first_name} ${p.last_name} ${p.national_id ?? ""}`
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [players, query]);
+  const columns: DataTableColumn<Player>[] = [
+    {
+      key: "name",
+      header: "שם",
+      cell: (p) => (
+        <span className="text-text-primary font-medium">
+          {p.first_name} {p.last_name}
+          {needsGuardian(p) && (
+            <span
+              title="שחקן קטין ללא איש קשר אחראי"
+              className="text-warning ms-1.5 align-middle text-xs"
+            >
+              ⚠️
+            </span>
+          )}
+        </span>
+      ),
+      sortValue: (p) => `${p.first_name} ${p.last_name}`,
+    },
+    {
+      key: "national_id",
+      header: "ת.ז.",
+      cell: (p) => (
+        <span className="text-text-muted">{p.national_id ?? "—"}</span>
+      ),
+      sortValue: (p) => p.national_id ?? "",
+    },
+    {
+      key: "birth",
+      header: "תאריך לידה",
+      cell: (p) => (
+        <span className="text-text-muted">{formatDate(p.birth_date)}</span>
+      ),
+      sortValue: (p) => p.birth_date ?? "",
+    },
+    {
+      key: "team",
+      header: "קבוצה",
+      cell: (p) => <span className="text-text-muted">{teamOf(p) || "—"}</span>,
+      sortValue: (p) => teamOf(p),
+      filter: { label: "קבוצה", value: (p) => teamOf(p) },
+    },
+    {
+      key: "status",
+      header: "סטטוס",
+      align: "end",
+      cell: (p) => (
+        <Badge variant={STATUS_VARIANT[p.status]}>
+          {PLAYER_STATUS_LABELS[p.status]}
+        </Badge>
+      ),
+      sortValue: (p) => PLAYER_STATUS_LABELS[p.status],
+      filter: { label: "סטטוס", value: (p) => PLAYER_STATUS_LABELS[p.status] },
+    },
+  ];
 
   return (
-    <div className="flex flex-col gap-3">
-      <Input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="חיפוש לפי שם או ת.ז.…"
-        className="max-w-xs"
+    <>
+      <DataTable
+        columns={columns}
+        rows={players}
+        rowKey={(p) => p.id}
+        onRowClick={readOnly ? undefined : open}
+        searchAccessor={(p) =>
+          `${p.first_name} ${p.last_name} ${p.national_id ?? ""}`
+        }
+        searchPlaceholder="חיפוש לפי שם או ת.ז.…"
+        emptyMessage="עדיין אין שחקנים."
       />
-
-      {players.length === 0 ? (
-        <p className="text-text-muted text-sm">עדיין אין שחקנים.</p>
-      ) : filtered.length === 0 ? (
-        <p className="text-text-muted text-sm">לא נמצאו תוצאות.</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>שם</TableHead>
-              <TableHead>ת.ז.</TableHead>
-              <TableHead>תאריך לידה</TableHead>
-              <TableHead>קבוצה</TableHead>
-              <TableHead className="text-end">סטטוס</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((player) => {
-              const needsGuardian =
-                isMinor(player.birth_date) &&
-                !(contactsByPlayer[player.id] ?? []).some(
-                  (l) => l.relationship !== "self",
-                );
-              return (
-                <TableRow
-                  key={player.id}
-                  onClick={() => open(player)}
-                  className={readOnly ? undefined : "cursor-pointer"}
-                >
-                  <TableCell className="text-text-primary font-medium">
-                    {player.first_name} {player.last_name}
-                    {needsGuardian && (
-                      <span
-                        title="שחקן קטין ללא איש קשר אחראי"
-                        className="text-warning ms-1.5 align-middle text-xs"
-                      >
-                        ⚠️
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-text-muted">
-                    {player.national_id ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-text-muted">
-                    {formatDate(player.birth_date)}
-                  </TableCell>
-                  <TableCell className="text-text-muted">
-                    {teamName[teamByPlayer[player.id] ?? ""] ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-end">
-                    <Badge variant={STATUS_VARIANT[player.status]}>
-                      {PLAYER_STATUS_LABELS[player.status]}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      )}
 
       {!readOnly && (
         <RowModal dialogRef={dialogRef} title="עריכת שחקן" onClose={close}>
@@ -170,6 +152,6 @@ export function PlayerList({
           )}
         </RowModal>
       )}
-    </div>
+    </>
   );
 }
