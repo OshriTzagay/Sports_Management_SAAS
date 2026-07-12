@@ -17,6 +17,7 @@ import type { Team } from "@/features/teams";
 import type { Contact, PlayerContactLink } from "@/features/contacts";
 import { PlayerContacts } from "@/features/contacts/player-contacts";
 import { EditPlayerForm } from "./edit-player-form";
+import { isMinor } from "./age";
 import { PLAYER_STATUS_LABELS, type Player, type PlayerStatus } from "./types";
 
 function formatDate(value: string | null): string {
@@ -100,31 +101,46 @@ export function PlayerList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((player) => (
-              <TableRow
-                key={player.id}
-                onClick={() => open(player)}
-                className={readOnly ? undefined : "cursor-pointer"}
-              >
-                <TableCell className="text-text-primary font-medium">
-                  {player.first_name} {player.last_name}
-                </TableCell>
-                <TableCell className="text-text-muted">
-                  {player.national_id ?? "—"}
-                </TableCell>
-                <TableCell className="text-text-muted">
-                  {formatDate(player.birth_date)}
-                </TableCell>
-                <TableCell className="text-text-muted">
-                  {teamName[teamByPlayer[player.id] ?? ""] ?? "—"}
-                </TableCell>
-                <TableCell className="text-end">
-                  <Badge variant={STATUS_VARIANT[player.status]}>
-                    {PLAYER_STATUS_LABELS[player.status]}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filtered.map((player) => {
+              const needsGuardian =
+                isMinor(player.birth_date) &&
+                !(contactsByPlayer[player.id] ?? []).some(
+                  (l) => l.relationship !== "self",
+                );
+              return (
+                <TableRow
+                  key={player.id}
+                  onClick={() => open(player)}
+                  className={readOnly ? undefined : "cursor-pointer"}
+                >
+                  <TableCell className="text-text-primary font-medium">
+                    {player.first_name} {player.last_name}
+                    {needsGuardian && (
+                      <span
+                        title="שחקן קטין ללא איש קשר אחראי"
+                        className="text-warning ms-1.5 align-middle text-xs"
+                      >
+                        ⚠️
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-text-muted">
+                    {player.national_id ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-text-muted">
+                    {formatDate(player.birth_date)}
+                  </TableCell>
+                  <TableCell className="text-text-muted">
+                    {teamName[teamByPlayer[player.id] ?? ""] ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <Badge variant={STATUS_VARIANT[player.status]}>
+                      {PLAYER_STATUS_LABELS[player.status]}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       )}
@@ -147,6 +163,7 @@ export function PlayerList({
                   playerId={selected.id}
                   links={contactsByPlayer[selected.id] ?? []}
                   contacts={contacts}
+                  isMinor={isMinor(selected.birth_date)}
                 />
               </div>
             </div>

@@ -6,3 +6,4 @@ export {
   type SeasonAssignment,
 } from "./queries";
 export { PLAYER_STATUS_LABELS, type Player, type PlayerStatus } from "./types";
+export { isMinor, calculateAge, MINOR_AGE } from "./age";

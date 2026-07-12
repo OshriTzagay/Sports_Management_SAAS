@@ -24,10 +24,12 @@ export function PlayerContacts({
   playerId,
   links,
   contacts,
+  isMinor = false,
 }: {
   playerId: string;
   links: PlayerContactLink[];
   contacts: Contact[];
+  isMinor?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -36,6 +38,10 @@ export function PlayerContacts({
 
   const linkedIds = new Set(links.map((l) => l.contact_id));
   const available = contacts.filter((c) => !linkedIds.has(c.id));
+
+  // שחקן קטין חייב איש קשר אחראי אחד לפחות שאינו "עצמי".
+  const hasGuardian = links.some((l) => l.relationship !== "self");
+  const showMinorWarning = isMinor && !hasGuardian;
 
   function add(formData: FormData) {
     startTransition(async () => {
@@ -64,6 +70,11 @@ export function PlayerContacts({
 
   return (
     <div className="flex flex-col gap-2">
+      {showMinorWarning && (
+        <p className="bg-warning-bg text-warning-text rounded-md px-2 py-1.5 text-xs">
+          ⚠️ שחקן קטין — מומלץ לשייך איש קשר אחראי (הורה/אפוטרופוס).
+        </p>
+      )}
       {links.length === 0 && (
         <span className="text-text-muted text-xs">אין אנשי קשר מקושרים.</span>
       )}
