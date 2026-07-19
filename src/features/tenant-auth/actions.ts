@@ -80,5 +80,39 @@ export async function verifyPhoneOtp(
   });
   if (error) return { error: "קוד שגוי או שפג תוקפו" };
 
+  // יעד פנימי בלבד (מונע open-redirect). ברירת מחדל: דף הבית.
+  const next = String(formData.get("next") ?? "/");
+  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/");
+}
+
+const passwordSchema = z.object({
+  password: z.string().min(8, "סיסמה חייבת לפחות 8 תווים"),
+});
+
+export type UpdatePasswordState = { error: string | null };
+
+/** קביעת סיסמה חדשה למשתמש המחובר (למשל אחרי כניסה ב-SMS OTP). */
+export async function updatePasswordAction(
+  _prev: UpdatePasswordState,
+  formData: FormData,
+): Promise<UpdatePasswordState> {
+  const parsed = passwordSchema.safeParse({
+    password: formData.get("password"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "יש להתחבר תחילה" };
+
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
+  if (error) return { error: "עדכון הסיסמה נכשל" };
+
   redirect("/");
 }
