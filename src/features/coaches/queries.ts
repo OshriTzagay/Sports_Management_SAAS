@@ -32,6 +32,21 @@ export async function listCoaches(): Promise<Coach[]> {
   return (data as Coach[] | null) ?? [];
 }
 
+/** מאמן בודד לפי מזהה (זהות). */
+export async function getCoach(coachId: string): Promise<Coach | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("coaches")
+    .select(
+      "id, club_id, first_name, last_name, phone, certification, license_expiry, status, created_at",
+    )
+    .eq("id", coachId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as Coach | null) ?? null;
+}
+
 /** שיוכי המאמנים לקבוצות בעונה נתונה (כולל שם הקבוצה). */
 export async function listSeasonCoachAssignments(
   seasonId: string,

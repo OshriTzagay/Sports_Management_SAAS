@@ -1,21 +1,11 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
-import { RowModal } from "@/components/ui/row-modal";
-import type { Team } from "@/features/teams";
-import type { TrainingSession } from "@/features/trainings/types";
-import { CoachTeamAssignments } from "./coach-team-assignments";
-import { CoachTrainingsSummary } from "./coach-trainings-summary";
-import { EditCoachForm } from "./edit-coach-form";
-import {
-  COACH_ROLE_LABELS,
-  COACH_STATUS_LABELS,
-  type Coach,
-  type CoachAssignment,
-} from "./types";
+import type { Coach, CoachAssignment } from "./types";
+import { COACH_ROLE_LABELS, COACH_STATUS_LABELS } from "./types";
 
 function LicenseCell({ expiry }: { expiry: string | null }) {
   if (!expiry) return <span className="text-text-muted">—</span>;
@@ -30,30 +20,12 @@ function LicenseCell({ expiry }: { expiry: string | null }) {
 
 interface CoachListProps {
   coaches: Coach[];
-  seasonId: string | null;
-  teams: Team[];
   assignmentsByCoach: Record<string, CoachAssignment[]>;
-  trainingsByCoach: Record<string, TrainingSession[]>;
-  readOnly?: boolean;
 }
 
-export function CoachList({
-  coaches,
-  seasonId,
-  teams,
-  assignmentsByCoach,
-  trainingsByCoach,
-  readOnly = false,
-}: CoachListProps) {
-  const [selected, setSelected] = useState<Coach | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  // גם ב-read-only פותחים — כדי לצפות בסיכום האימונים (למשל גזבר/ית לתשלום).
-  const open = (coach: Coach) => {
-    setSelected(coach);
-    dialogRef.current?.showModal();
-  };
-  const close = useCallback(() => dialogRef.current?.close(), []);
+/** רשימת מאמנים — לחיצה על שורה פותחת את עמוד המאמן המלא (/coaches/[id]). */
+export function CoachList({ coaches, assignmentsByCoach }: CoachListProps) {
+  const router = useRouter();
 
   const columns: DataTableColumn<Coach>[] = [
     {
@@ -114,63 +86,14 @@ export function CoachList({
   ];
 
   return (
-    <>
-      <DataTable
-        columns={columns}
-        rows={coaches}
-        rowKey={(c) => c.id}
-        onRowClick={open}
-        searchAccessor={(c) =>
-          `${c.first_name} ${c.last_name} ${c.phone ?? ""}`
-        }
-        searchPlaceholder="חיפוש מאמן…"
-        emptyMessage="עדיין אין מאמנים."
-      />
-
-      <RowModal
-        dialogRef={dialogRef}
-        title={readOnly ? "פרטי מאמן" : "עריכת מאמן"}
-        onClose={close}
-      >
-        {selected && (
-          <div className="flex flex-col gap-4">
-            {!readOnly && (
-              <EditCoachForm
-                key={selected.id}
-                coach={selected}
-                onClose={close}
-              />
-            )}
-            {!readOnly && seasonId && (
-              <div className="border-border flex flex-col gap-2 border-t pt-4">
-                <span className="text-text-muted text-xs">
-                  שיוך לקבוצות (בעונה הפעילה)
-                </span>
-                <CoachTeamAssignments
-                  coachId={selected.id}
-                  seasonId={seasonId}
-                  teams={teams}
-                  assignments={assignmentsByCoach[selected.id] ?? []}
-                />
-              </div>
-            )}
-            <div
-              className={
-                readOnly
-                  ? "flex flex-col gap-2"
-                  : "border-border flex flex-col gap-2 border-t pt-4"
-              }
-            >
-              <span className="text-text-muted text-xs">
-                אימונים (בעונה הנבחרת)
-              </span>
-              <CoachTrainingsSummary
-                trainings={trainingsByCoach[selected.id] ?? []}
-              />
-            </div>
-          </div>
-        )}
-      </RowModal>
-    </>
+    <DataTable
+      columns={columns}
+      rows={coaches}
+      rowKey={(c) => c.id}
+      onRowClick={(c) => router.push(`/coaches/${c.id}`)}
+      searchAccessor={(c) => `${c.first_name} ${c.last_name} ${c.phone ?? ""}`}
+      searchPlaceholder="חיפוש מאמן…"
+      emptyMessage="עדיין אין מאמנים."
+    />
   );
 }
