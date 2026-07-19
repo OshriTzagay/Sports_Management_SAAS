@@ -27,10 +27,10 @@ begin
     from public.roles r join public.role_permissions rp on rp.role_id = r.id
    where r.club_id = 'a1111111-1111-1111-1111-111111111111' and r.name = 'מאמן';
 
-  assert v_owner = 16, format('FAIL: owner should have 16 perms, got %s', v_owner);
-  assert v_treasurer = 9, format('FAIL: treasurer should have 9 perms, got %s', v_treasurer);
-  assert v_coach = 5, format('FAIL: coach should have 5 perms, got %s', v_coach);
-  raise notice 'PASS: perm counts owner=16 treasurer=9 coach=5';
+  assert v_owner = 18, format('FAIL: owner should have 18 perms, got %s', v_owner);
+  assert v_treasurer = 10, format('FAIL: treasurer should have 10 perms, got %s', v_treasurer);
+  assert v_coach = 7, format('FAIL: coach should have 7 perms, got %s', v_coach);
+  raise notice 'PASS: perm counts owner=18 treasurer=10 coach=7';
 end $$;
 
 -- גזבר/ית: יש payments.charge, אין users.manage ואין settings.manage
@@ -84,7 +84,7 @@ begin
     from public.roles r join public.role_permissions rp on rp.role_id = r.id
    where r.club_id = 'a1111111-1111-1111-1111-111111111111' and r.name = 'מנהל מועדון';
   assert v_roles = 3, format('FAIL: should stay 3 system roles, got %s', v_roles);
-  assert v_owner = 16, format('FAIL: owner perms duplicated, got %s', v_owner);
+  assert v_owner = 18, format('FAIL: owner perms duplicated, got %s', v_owner);
   raise notice 'PASS: ensure_system_roles is idempotent';
 end $$;
 
