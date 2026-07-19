@@ -23,6 +23,8 @@ interface CreateAuthUserInput {
   email: string;
   password: string;
   appMetadata: Record<string, unknown>;
+  /** טלפון E.164 אופציונלי — מאושר מיידית כדי לאפשר כניסה ב-SMS OTP. */
+  phone?: string;
 }
 
 /** יוצר משתמש אימות (auth.users) ומחזיר את ה-id. */
@@ -37,6 +39,7 @@ export async function adminCreateAuthUser(
       password: input.password,
       email_confirm: true,
       app_metadata: input.appMetadata,
+      ...(input.phone ? { phone: input.phone, phone_confirm: true } : {}),
     }),
   });
   if (!res.ok) {

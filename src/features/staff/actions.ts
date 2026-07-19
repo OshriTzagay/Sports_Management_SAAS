@@ -8,6 +8,7 @@ import { requirePermission } from "@/features/tenant-auth";
 import { adminCreateAuthUser, adminDeleteAuthUser } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toUserMessage } from "@/lib/db-error";
+import { normalizeIsraeliPhone } from "@/lib/phone";
 
 /** סיסמה זמנית ~12 תווים (מוצגת פעם אחת למזמין; המשתמש מחליף בכניסה). */
 function generateTempPassword(): string {
@@ -18,6 +19,11 @@ const inviteSchema = z.object({
   fullName: z.string().trim().min(2, "שם מלא נדרש"),
   email: z.string().trim().email("אימייל לא תקין"),
   roleId: z.string().uuid("יש לבחור תפקיד"),
+  phone: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : null)),
 });
 
 export type InviteStaffState =
@@ -40,12 +46,21 @@ export async function inviteStaffAction(
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     roleId: formData.get("roleId"),
+    phone: formData.get("phone"),
   });
   if (!parsed.success) {
     return {
       status: "error",
       error: parsed.error.issues[0]?.message ?? "קלט לא תקין",
     };
+  }
+
+  // טלפון אופציונלי — אם סופק, חייב להיות תקין (כדי לאפשר כניסה ב-SMS).
+  let phone: string | undefined;
+  if (parsed.data.phone) {
+    const normalized = normalizeIsraeliPhone(parsed.data.phone);
+    if (!normalized) return { status: "error", error: "מספר טלפון לא תקין" };
+    phone = normalized;
   }
 
   const supabase = await createServerSupabaseClient();
@@ -66,11 +81,12 @@ export async function inviteStaffAction(
       email: parsed.data.email,
       password: tempPassword,
       appMetadata: { club_id: actor.club_id, is_platform: false },
+      phone,
     });
   } catch (err) {
     const msg = (err instanceof Error ? err.message : "").toLowerCase();
     if (msg.includes("already") || msg.includes("registered")) {
-      return { status: "error", error: "כבר קיים משתמש עם אימייל זה" };
+      return { status: "error", error: "כבר קיים משתמש עם אימייל או טלפון זה" };
     }
     return { status: "error", error: "יצירת המשתמש נכשלה" };
   }

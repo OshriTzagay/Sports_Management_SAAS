@@ -37,6 +37,12 @@ export function InviteStaffForm({ roles }: { roles: AssignableRole[] }) {
     <form action={formAction} className="flex flex-col gap-3">
       <Input name="fullName" placeholder="שם מלא" required />
       <Input name="email" type="email" placeholder="אימייל" required />
+      <Input
+        name="phone"
+        type="tel"
+        inputMode="tel"
+        placeholder="טלפון (לכניסה ב-SMS — אופציונלי)"
+      />
       <SearchableSelect
         name="roleId"
         value={roleId}
