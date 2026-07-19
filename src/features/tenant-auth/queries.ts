@@ -26,12 +26,22 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
   const { data } = await supabase
     .from("users")
-    .select("id, club_id, email, full_name, role_id")
+    .select("id, club_id, email, full_name, role_id, status")
     .eq("id", user.id)
     .is("deleted_at", null)
     .maybeSingle();
 
-  return (data as CurrentUser | null) ?? null;
+  // משתמש מושבת נחסם מכניסה — השבתה חייבת להיות אפקטיבית.
+  const row = data as (CurrentUser & { status: string }) | null;
+  if (!row || row.status !== "active") return null;
+
+  return {
+    id: row.id,
+    club_id: row.club_id,
+    email: row.email,
+    full_name: row.full_name,
+    role_id: row.role_id,
+  };
 }
 
 /** שער כניסה לאזור המועדון (default-deny): מפנה ל-login אם לא מחובר. */
