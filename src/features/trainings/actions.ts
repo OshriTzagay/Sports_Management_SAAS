@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requirePermission, getUserPermissions } from "@/features/tenant-auth";
+import {
+  requirePermission,
+  requireUser,
+  getUserPermissions,
+} from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getMyCoachId } from "./queries";
 import type { TrainingStatus } from "./types";
@@ -29,26 +33,39 @@ async function authorizeTrainingEdit(sessionId: string): Promise<{
   session: EditableSession;
   isOwner: boolean;
 }> {
-  const user = await requirePermission("trainings.manage");
+  const user = await requireUser();
   const supabase = await createServerSupabaseClient();
 
-  const { data } = await supabase
-    .from("training_sessions")
-    .select("id, season_id, team_id, coach_id, status")
-    .eq("id", sessionId)
-    .is("deleted_at", null)
-    .maybeSingle();
-  const session = data as EditableSession | null;
+  // הרשאות, האימון, וקישור-המאמן — במקביל (במקום סדרתית) לקיצור זמן התגובה.
+  const [perms, sessionRes, meRes] = await Promise.all([
+    getUserPermissions(user),
+    supabase
+      .from("training_sessions")
+      .select("id, season_id, team_id, coach_id, status")
+      .eq("id", sessionId)
+      .is("deleted_at", null)
+      .maybeSingle(),
+    supabase
+      .from("users")
+      .select("person_type, person_id")
+      .eq("id", user.id)
+      .maybeSingle(),
+  ]);
+
+  if (!perms.has("trainings.manage")) throw new Error("אין הרשאה");
+  const session = sessionRes.data as EditableSession | null;
   if (!session) throw new Error("אימון לא נמצא");
 
-  const perms = await getUserPermissions(user);
   const isOwner = perms.has("users.manage");
-
   if (session.status === "completed" && !isOwner) {
     throw new Error("האימון הסתיים ונעול לעריכה. פנה למנהל.");
   }
   if (!isOwner) {
-    const coachId = await getMyCoachId();
+    const me = meRes.data as {
+      person_type: string | null;
+      person_id: string | null;
+    } | null;
+    const coachId = me?.person_type === "coach" ? me.person_id : null;
     if (!coachId || coachId !== session.coach_id) {
       throw new Error("אין הרשאה לאימון זה");
     }

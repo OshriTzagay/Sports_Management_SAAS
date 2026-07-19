@@ -34,11 +34,21 @@ export function TrainingDetail({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [rows, setRows] = useState(attendance);
+  const [saving, setSaving] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const notesRef = useRef<HTMLDialogElement>(null);
 
   const present = rows.filter((r) => r.status === "present").length;
   const total = rows.length;
+
+  function markSaving(playerId: string, on: boolean) {
+    setSaving((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(playerId);
+      else next.delete(playerId);
+      return next;
+    });
+  }
 
   function run(
     action: (fd: FormData) => Promise<void>,
@@ -57,28 +67,33 @@ export function TrainingDetail({
     });
   }
 
-  function toggle(playerId: string, current: AttendanceRow["status"]) {
-    if (!canManage || pending) return;
+  // סימון נוכחות אופטימי, לא-חוסם: כל שורה נשמרת עצמאית עם חיווי משלה,
+  // בלי לנעול את שאר הרשימה (חוויה מהירה בשטח).
+  async function toggle(playerId: string, current: AttendanceRow["status"]) {
+    if (!canManage) return;
     const next = current === "present" ? "absent" : "present";
     setRows((rs) =>
       rs.map((r) => (r.player_id === playerId ? { ...r, status: next } : r)),
     );
+    markSaving(playerId, true);
+    setError(null);
+
     const formData = new FormData();
     formData.set("sessionId", session.id);
     formData.set("playerId", playerId);
     formData.set("status", next);
-    startTransition(async () => {
-      try {
-        await setAttendanceAction(formData);
-      } catch (err) {
-        setRows((rs) =>
-          rs.map((r) =>
-            r.player_id === playerId ? { ...r, status: current } : r,
-          ),
-        );
-        setError(err instanceof Error ? err.message : "שגיאה בשמירת נוכחות");
-      }
-    });
+    try {
+      await setAttendanceAction(formData);
+    } catch (err) {
+      setRows((rs) =>
+        rs.map((r) =>
+          r.player_id === playerId ? { ...r, status: current } : r,
+        ),
+      );
+      setError(err instanceof Error ? err.message : "שגיאה בשמירת נוכחות");
+    } finally {
+      markSaving(playerId, false);
+    }
   }
 
   function submitEnd(formData: FormData) {
@@ -127,14 +142,15 @@ export function TrainingDetail({
           <ul className="flex flex-col gap-2 pb-24">
             {rows.map((r) => {
               const isPresent = r.status === "present";
+              const isSaving = saving.has(r.player_id);
               return (
                 <li key={r.player_id}>
                   <button
                     type="button"
-                    disabled={!canManage || pending}
+                    disabled={!canManage}
                     onClick={() => toggle(r.player_id, r.status)}
                     className={cn(
-                      "border-border flex h-14 w-full items-center justify-between gap-3 rounded-lg border px-4 transition-colors",
+                      "border-border flex h-14 w-full items-center justify-between gap-3 rounded-lg border px-4 transition-colors active:scale-[0.99]",
                       isPresent
                         ? "bg-success-bg border-success/30"
                         : "bg-bg-surface",
@@ -145,13 +161,15 @@ export function TrainingDetail({
                     </span>
                     <span
                       className={cn(
-                        "flex size-8 items-center justify-center rounded-full",
+                        "flex size-8 items-center justify-center rounded-full transition-colors",
                         isPresent
                           ? "bg-success text-white"
                           : "bg-bg-muted text-text-muted",
                       )}
                     >
-                      {isPresent ? (
+                      {isSaving ? (
+                        <Spinner className="size-4" />
+                      ) : isPresent ? (
                         <Check className="size-5" />
                       ) : (
                         <X className="size-5" />
