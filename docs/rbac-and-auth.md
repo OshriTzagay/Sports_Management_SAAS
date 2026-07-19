@@ -98,10 +98,10 @@ Owner יכול גם **לשנות role** ו**להשבית** (status=inactive / so
 
 - [x] **מיגרציה:** seed 3 תפקידי מערכת + מיפוי הרשאות לכל מועדון; משולב ב-`provision_club`. *(20260713000001 · `ensure_system_roles` · backfilled · test `system_roles.sql`)*
 - [x] **`requirePermission(key)`** בשכבת `tenant-auth` (טוען role→permissions; default-deny). *(`permissions.ts` — נותר לעטוף את ה-actions עצמם.)*
-- [x] **סינון UI לפי הרשאה** — כל הדפים טוענים `getCurrentPermissions()`, מסתירים כפתורי "+" ונועלים עריכת-שורה למי שאין לו `*.manage`. *(נותר: סינון פריטי ניווט בסייד-בר.)*
-- [ ] **מסך ניהול צוות** — רשימת משתמשים (DataTable), שינוי role, השבתה.
-- [ ] **זרימת הזמנה במייל** — Admin API (service role) ב-API route מאובטח.
-- [ ] **מסך התחברות משודרג** + עמוד הגדרת סיסמה מהזמנה.
+- [x] **סינון UI לפי הרשאה** — כל הדפים טוענים `getCurrentPermissions()`, מסתירים כפתורי "+" ונועלים עריכת-שורה למי שאין לו `*.manage`. פריט הניווט "צוות" מסונן ב-`users.manage`.
+- [x] **מסך ניהול צוות** (`/team`, feature `staff`) — DataTable של משתמשים, הזמנה, שינוי role, הפעלה/השבתה. self-guard (אי-אפשר לשנות role/status של עצמך). `getCurrentUser` חוסם משתמש מושבת.
+- [x] **הזמנת משתמש** — `inviteStaffAction` יוצר auth user דרך Admin API עם `app_metadata.club_id`, משייך role, מחזיר **סיסמה זמנית חד-פעמית** (מוצגת למזמין), עם פיצוי (מחיקת auth user) אם ה-insert נכשל. *(עקבי עם provisionClub. מעבר להזמנה במייל = החלפת שכבת ההעברה בלבד, כשיוגדר SMTP.)*
+- [ ] **מסך התחברות משודרג** + עמוד "החלפת סיסמה בכניסה ראשונה".
 - [ ] **audit log** לפעולות צוות/הרשאות (טבלת `audit_logs` כבר קיימת).
 - [ ] (אחר-כך) **SMS OTP** כאופציית התחברות.
 
