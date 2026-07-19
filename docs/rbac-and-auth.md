@@ -101,9 +101,17 @@ Owner יכול גם **לשנות role** ו**להשבית** (status=inactive / so
 - [x] **סינון UI לפי הרשאה** — כל הדפים טוענים `getCurrentPermissions()`, מסתירים כפתורי "+" ונועלים עריכת-שורה למי שאין לו `*.manage`. פריט הניווט "צוות" מסונן ב-`users.manage`.
 - [x] **מסך ניהול צוות** (`/team`, feature `staff`) — DataTable של משתמשים, הזמנה, שינוי role, הפעלה/השבתה. self-guard (אי-אפשר לשנות role/status של עצמך). `getCurrentUser` חוסם משתמש מושבת.
 - [x] **הזמנת משתמש** — `inviteStaffAction` יוצר auth user דרך Admin API עם `app_metadata.club_id`, משייך role, מחזיר **סיסמה זמנית חד-פעמית** (מוצגת למזמין), עם פיצוי (מחיקת auth user) אם ה-insert נכשל. *(עקבי עם provisionClub. מעבר להזמנה במייל = החלפת שכבת ההעברה בלבד, כשיוגדר SMTP.)*
-- [ ] **מסך התחברות משודרג** + עמוד "החלפת סיסמה בכניסה ראשונה".
+- [x] **מסך התחברות משודרג** — טאבים אימייל/סיסמה + **SMS OTP** (`sendPhoneOtp`/`verifyPhoneOtp`, `shouldCreateUser:false`). הזמנה תומכת בטלפון אופציונלי (`phone_confirm`) לכניסה ב-SMS. *(דורש הפעלת Phone provider + Twilio ב-Dashboard — ראה §9.)*
+- [ ] **עמוד "החלפת סיסמה בכניסה ראשונה"** (הסיסמה הזמנית עדיין תקפה ללא הכרח החלפה).
 - [ ] **audit log** לפעולות צוות/הרשאות (טבלת `audit_logs` כבר קיימת).
-- [ ] (אחר-כך) **SMS OTP** כאופציית התחברות.
+
+## 9. הגדרת Twilio ל-SMS (צד ה-Dashboard — לא בקוד)
+
+הקוד מוכן; שליחת SMS דורשת קונפיגורציה ב-Supabase Dashboard (סודות לא בריפו):
+1. **Authentication → Sign In / Providers → Phone** — הפעל, בחר **Twilio**.
+2. הדבק מ-Twilio Console: **Account SID**, **Auth Token**, ו-**Message Service SID** (או **From number**).
+3. **כבה "Enable phone signups"** — רק טלפונים שהוזמנו יוכלו להיכנס.
+4. ישראל: trial שולח רק למספרים מאומתים; לשליחה חופשית — שדרוג + Alphanumeric Sender ID.
 
 ---
 
