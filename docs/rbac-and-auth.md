@@ -96,8 +96,8 @@ Owner יכול גם **לשנות role** ו**להשבית** (status=inactive / so
 
 ## 6. סדר מימוש (checklist)
 
-- [ ] **מיגרציה:** seed 3 תפקידי מערכת + מיפוי הרשאות לכל מועדון; לשלב ב-`provision_club` למועדונים חדשים.
-- [ ] **`requirePermission(key)`** בשכבת `tenant-auth` (טוען role→permissions; default-deny). לעטוף כל action רגיש.
+- [x] **מיגרציה:** seed 3 תפקידי מערכת + מיפוי הרשאות לכל מועדון; משולב ב-`provision_club`. *(20260713000001 · `ensure_system_roles` · backfilled · test `system_roles.sql`)*
+- [x] **`requirePermission(key)`** בשכבת `tenant-auth` (טוען role→permissions; default-deny). *(`permissions.ts` — נותר לעטוף את ה-actions עצמם.)*
 - [ ] **סינון UI לפי הרשאה** — הסתרת כפתורי "+"/פעולות/פריטי ניווט שאין להם הרשאה. (helper `can(key)` צד-שרת + צד-לקוח.)
 - [ ] **מסך ניהול צוות** — רשימת משתמשים (DataTable), שינוי role, השבתה.
 - [ ] **זרימת הזמנה במייל** — Admin API (service role) ב-API route מאובטח.
