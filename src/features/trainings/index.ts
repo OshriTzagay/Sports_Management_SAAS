@@ -4,6 +4,7 @@ export {
   getMyCoachId,
   listCoachTeams,
   listTrainingsForCoach,
+  listSeasonTrainings,
   listTrainingsByCoach,
   getTraining,
   listAttendance,

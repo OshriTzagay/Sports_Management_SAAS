@@ -149,6 +149,21 @@ export async function listTrainingsForCoach(
   return withCounts((data ?? []) as unknown as RawSession[], seasonId);
 }
 
+/** כל אימוני העונה (כל המאמנים) — למסך המנהל, מקובץ אח"כ לפי מאמן. */
+export async function listSeasonTrainings(
+  seasonId: string,
+): Promise<TrainingSession[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("training_sessions")
+    .select(SESSION_COLUMNS)
+    .eq("season_id", seasonId)
+    .is("deleted_at", null)
+    .order("scheduled_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return withCounts((data ?? []) as unknown as RawSession[], seasonId);
+}
+
 /** כל אימוני מאמן (לכל העונות) — למסך המנהל/תשלום. */
 export async function listTrainingsByCoach(
   coachId: string,

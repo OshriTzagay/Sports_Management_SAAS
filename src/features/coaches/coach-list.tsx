@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { RowModal } from "@/components/ui/row-modal";
 import type { Team } from "@/features/teams";
+import type { TrainingSession } from "@/features/trainings/types";
 import { CoachTeamAssignments } from "./coach-team-assignments";
+import { CoachTrainingsSummary } from "./coach-trainings-summary";
 import { EditCoachForm } from "./edit-coach-form";
 import {
   COACH_ROLE_LABELS,
@@ -31,6 +33,7 @@ interface CoachListProps {
   seasonId: string | null;
   teams: Team[];
   assignmentsByCoach: Record<string, CoachAssignment[]>;
+  trainingsByCoach: Record<string, TrainingSession[]>;
   readOnly?: boolean;
 }
 
@@ -39,13 +42,14 @@ export function CoachList({
   seasonId,
   teams,
   assignmentsByCoach,
+  trainingsByCoach,
   readOnly = false,
 }: CoachListProps) {
   const [selected, setSelected] = useState<Coach | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
+  // גם ב-read-only פותחים — כדי לצפות בסיכום האימונים (למשל גזבר/ית לתשלום).
   const open = (coach: Coach) => {
-    if (readOnly) return;
     setSelected(coach);
     dialogRef.current?.showModal();
   };
@@ -115,7 +119,7 @@ export function CoachList({
         columns={columns}
         rows={coaches}
         rowKey={(c) => c.id}
-        onRowClick={readOnly ? undefined : open}
+        onRowClick={open}
         searchAccessor={(c) =>
           `${c.first_name} ${c.last_name} ${c.phone ?? ""}`
         }
@@ -123,32 +127,50 @@ export function CoachList({
         emptyMessage="עדיין אין מאמנים."
       />
 
-      {!readOnly && (
-        <RowModal dialogRef={dialogRef} title="עריכת מאמן" onClose={close}>
-          {selected && (
-            <div className="flex flex-col gap-4">
+      <RowModal
+        dialogRef={dialogRef}
+        title={readOnly ? "פרטי מאמן" : "עריכת מאמן"}
+        onClose={close}
+      >
+        {selected && (
+          <div className="flex flex-col gap-4">
+            {!readOnly && (
               <EditCoachForm
                 key={selected.id}
                 coach={selected}
                 onClose={close}
               />
-              {seasonId && (
-                <div className="border-border flex flex-col gap-2 border-t pt-4">
-                  <span className="text-text-muted text-xs">
-                    שיוך לקבוצות (בעונה הפעילה)
-                  </span>
-                  <CoachTeamAssignments
-                    coachId={selected.id}
-                    seasonId={seasonId}
-                    teams={teams}
-                    assignments={assignmentsByCoach[selected.id] ?? []}
-                  />
-                </div>
-              )}
+            )}
+            {!readOnly && seasonId && (
+              <div className="border-border flex flex-col gap-2 border-t pt-4">
+                <span className="text-text-muted text-xs">
+                  שיוך לקבוצות (בעונה הפעילה)
+                </span>
+                <CoachTeamAssignments
+                  coachId={selected.id}
+                  seasonId={seasonId}
+                  teams={teams}
+                  assignments={assignmentsByCoach[selected.id] ?? []}
+                />
+              </div>
+            )}
+            <div
+              className={
+                readOnly
+                  ? "flex flex-col gap-2"
+                  : "border-border flex flex-col gap-2 border-t pt-4"
+              }
+            >
+              <span className="text-text-muted text-xs">
+                אימונים (בעונה הנבחרת)
+              </span>
+              <CoachTrainingsSummary
+                trainings={trainingsByCoach[selected.id] ?? []}
+              />
             </div>
-          )}
-        </RowModal>
-      )}
+          </div>
+        )}
+      </RowModal>
     </>
   );
 }
