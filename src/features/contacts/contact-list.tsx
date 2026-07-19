@@ -34,11 +34,18 @@ const columns: DataTableColumn<Contact>[] = [
   },
 ];
 
-export function ContactList({ contacts }: { contacts: Contact[] }) {
+export function ContactList({
+  contacts,
+  readOnly = false,
+}: {
+  contacts: Contact[];
+  readOnly?: boolean;
+}) {
   const [selected, setSelected] = useState<Contact | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const open = (contact: Contact) => {
+    if (readOnly) return;
     setSelected(contact);
     dialogRef.current?.showModal();
   };
@@ -50,7 +57,7 @@ export function ContactList({ contacts }: { contacts: Contact[] }) {
         columns={columns}
         rows={contacts}
         rowKey={(c) => c.id}
-        onRowClick={open}
+        onRowClick={readOnly ? undefined : open}
         searchAccessor={(c) =>
           `${c.first_name} ${c.last_name ?? ""} ${c.phone ?? ""} ${c.email ?? ""}`
         }
@@ -58,15 +65,17 @@ export function ContactList({ contacts }: { contacts: Contact[] }) {
         emptyMessage="עדיין אין אנשי קשר."
       />
 
-      <RowModal dialogRef={dialogRef} title="עריכת איש קשר" onClose={close}>
-        {selected && (
-          <EditContactForm
-            key={selected.id}
-            contact={selected}
-            onClose={close}
-          />
-        )}
-      </RowModal>
+      {!readOnly && (
+        <RowModal dialogRef={dialogRef} title="עריכת איש קשר" onClose={close}>
+          {selected && (
+            <EditContactForm
+              key={selected.id}
+              contact={selected}
+              onClose={close}
+            />
+          )}
+        </RowModal>
+      )}
     </>
   );
 }

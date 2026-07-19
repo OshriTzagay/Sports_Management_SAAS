@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { FormDialog } from "@/components/ui/form-dialog";
-import { requireUser } from "@/features/tenant-auth";
+import { getCurrentPermissions } from "@/features/tenant-auth";
 import { getSelectedSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
 import { listPlayers, listSeasonAssignments } from "@/features/players";
@@ -10,7 +10,7 @@ import { PlayerList } from "@/features/players/player-list";
 import { CreatePlayerForm } from "@/features/players/create-player-form";
 
 export default async function PlayersPage() {
-  await requireUser();
+  const perms = await getCurrentPermissions();
 
   const [season, players, contacts, contactLinks] = await Promise.all([
     getSelectedSeason(),
@@ -19,7 +19,8 @@ export default async function PlayersPage() {
     listPlayerContacts(),
   ]);
 
-  const readOnly = season ? !season.is_active : false;
+  const canManage = perms.has("players.manage");
+  const readOnly = (season ? !season.is_active : false) || !canManage;
 
   const [teams, assignments] = season
     ? await Promise.all([

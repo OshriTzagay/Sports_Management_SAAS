@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { FormDialog } from "@/components/ui/form-dialog";
-import { requireUser } from "@/features/tenant-auth";
+import { getCurrentPermissions } from "@/features/tenant-auth";
 import { getSelectedSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
 import { listCoaches, listSeasonCoachAssignments } from "@/features/coaches";
@@ -9,14 +9,15 @@ import { CoachList } from "@/features/coaches/coach-list";
 import { CreateCoachForm } from "@/features/coaches/create-coach-form";
 
 export default async function CoachesPage() {
-  await requireUser();
+  const perms = await getCurrentPermissions();
 
   const [season, coaches] = await Promise.all([
     getSelectedSeason(),
     listCoaches(),
   ]);
 
-  const readOnly = season ? !season.is_active : false;
+  const readOnly =
+    (season ? !season.is_active : false) || !perms.has("coaches.manage");
 
   const [teams, assignments] = season
     ? await Promise.all([

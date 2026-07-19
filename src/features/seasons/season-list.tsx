@@ -30,11 +30,18 @@ function StatusBadge({ season }: { season: Season }) {
   return <Badge variant="info">לא פעילה</Badge>;
 }
 
-export function SeasonList({ seasons }: { seasons: Season[] }) {
+export function SeasonList({
+  seasons,
+  readOnly = false,
+}: {
+  seasons: Season[];
+  readOnly?: boolean;
+}) {
   const [selected, setSelected] = useState<Season | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const open = (season: Season) => {
+    if (readOnly) return;
     setSelected(season);
     dialogRef.current?.showModal();
   };
@@ -59,7 +66,7 @@ export function SeasonList({ seasons }: { seasons: Season[] }) {
             <TableRow
               key={season.id}
               onClick={() => open(season)}
-              className="cursor-pointer"
+              className={readOnly ? undefined : "cursor-pointer"}
             >
               <TableCell className="text-text-primary font-medium">
                 {season.name}
@@ -75,20 +82,22 @@ export function SeasonList({ seasons }: { seasons: Season[] }) {
         </TableBody>
       </Table>
 
-      <RowModal dialogRef={dialogRef} title="עריכת עונה" onClose={close}>
-        {selected && (
-          <div className="flex flex-col gap-4">
-            <EditSeasonForm
-              key={selected.id}
-              season={selected}
-              onClose={close}
-            />
-            <div className="border-border flex items-center gap-2 border-t pt-4">
-              <SeasonRowActions season={selected} />
+      {!readOnly && (
+        <RowModal dialogRef={dialogRef} title="עריכת עונה" onClose={close}>
+          {selected && (
+            <div className="flex flex-col gap-4">
+              <EditSeasonForm
+                key={selected.id}
+                season={selected}
+                onClose={close}
+              />
+              <div className="border-border flex items-center gap-2 border-t pt-4">
+                <SeasonRowActions season={selected} />
+              </div>
             </div>
-          </div>
-        )}
-      </RowModal>
+          )}
+        </RowModal>
+      )}
     </>
   );
 }

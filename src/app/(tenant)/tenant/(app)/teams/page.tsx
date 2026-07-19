@@ -2,14 +2,14 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { FormDialog } from "@/components/ui/form-dialog";
-import { requireUser } from "@/features/tenant-auth";
+import { getCurrentPermissions } from "@/features/tenant-auth";
 import { getSelectedSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
 import { TeamList } from "@/features/teams/team-list";
 import { CreateTeamForm } from "@/features/teams/create-team-form";
 
 export default async function TeamsPage() {
-  await requireUser();
+  const perms = await getCurrentPermissions();
   const season = await getSelectedSeason();
 
   if (!season) {
@@ -27,7 +27,7 @@ export default async function TeamsPage() {
     );
   }
 
-  const readOnly = !season.is_active;
+  const readOnly = !season.is_active || !perms.has("teams.manage");
   const teams = await listTeams(season.id);
 
   return (
