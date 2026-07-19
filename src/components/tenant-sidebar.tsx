@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  Timer,
   UserCog,
   UserRound,
   Users,
@@ -30,6 +31,8 @@ interface NavItem {
   icon: LucideIcon;
   /** מוצג רק למי שיכול לנהל צוות (users.manage). */
   staffOnly?: boolean;
+  /** מוצג רק למאמן מקושר (person_type='coach'). */
+  coachOnly?: boolean;
 }
 
 const NAV: NavItem[] = [
@@ -38,6 +41,7 @@ const NAV: NavItem[] = [
   { href: "/teams", label: "קבוצות", icon: Users },
   { href: "/players", label: "שחקנים", icon: UserRound },
   { href: "/coaches", label: "מאמנים", icon: ClipboardList },
+  { href: "/trainings", label: "אימונים", icon: Timer, coachOnly: true },
   { href: "/contacts", label: "אנשי קשר", icon: Contact },
   { href: "/team", label: "צוות", icon: UserCog, staffOnly: true },
   { href: "/settings", label: "הגדרות", icon: Settings },
@@ -54,6 +58,7 @@ export function TenantSidebar({
   clubName,
   logoUrl,
   canManageStaff = false,
+  isCoach = false,
 }: {
   userEmail: string;
   seasons: Season[];
@@ -61,10 +66,14 @@ export function TenantSidebar({
   clubName: string | null;
   logoUrl: string | null;
   canManageStaff?: boolean;
+  isCoach?: boolean;
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const navItems = NAV.filter((item) => !item.staffOnly || canManageStaff);
+  const navItems = NAV.filter(
+    (item) =>
+      (!item.staffOnly || canManageStaff) && (!item.coachOnly || isCoach),
+  );
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
