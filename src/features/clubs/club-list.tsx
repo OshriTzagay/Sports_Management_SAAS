@@ -1,12 +1,7 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { ClubStatusToggle } from "./club-status-toggle";
 import type { Club } from "./types";
 
@@ -19,39 +14,47 @@ const STATUS: Record<
   suspended: { label: "מושעה", variant: "danger" },
 };
 
-export function ClubList({ clubs }: { clubs: Club[] }) {
-  if (clubs.length === 0) {
-    return <p className="text-text-muted text-sm">עדיין אין מועדונים.</p>;
-  }
+const columns: DataTableColumn<Club>[] = [
+  {
+    key: "name",
+    header: "מועדון",
+    cell: (c) => (
+      <span className="text-text-primary font-medium">{c.name}</span>
+    ),
+    sortValue: (c) => c.name,
+  },
+  {
+    key: "slug",
+    header: "מזהה",
+    cell: (c) => <span className="text-text-muted">{c.slug}</span>,
+    sortValue: (c) => c.slug,
+  },
+  {
+    key: "status",
+    header: "סטטוס",
+    cell: (c) => (
+      <Badge variant={STATUS[c.status].variant}>{STATUS[c.status].label}</Badge>
+    ),
+    sortValue: (c) => STATUS[c.status].label,
+    filter: { label: "סטטוס", value: (c) => STATUS[c.status].label },
+  },
+  {
+    key: "actions",
+    header: "פעולות",
+    align: "end",
+    cell: (c) => <ClubStatusToggle clubId={c.id} status={c.status} />,
+  },
+];
 
+export function ClubList({ clubs }: { clubs: Club[] }) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>מועדון</TableHead>
-          <TableHead>מזהה</TableHead>
-          <TableHead>סטטוס</TableHead>
-          <TableHead className="text-end">פעולות</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {clubs.map((club) => (
-          <TableRow key={club.id}>
-            <TableCell className="text-text-primary font-medium">
-              {club.name}
-            </TableCell>
-            <TableCell className="text-text-muted">{club.slug}</TableCell>
-            <TableCell>
-              <Badge variant={STATUS[club.status].variant}>
-                {STATUS[club.status].label}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-end">
-              <ClubStatusToggle clubId={club.id} status={club.status} />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <DataTable
+      columns={columns}
+      rows={clubs}
+      rowKey={(c) => c.id}
+      searchAccessor={(c) => `${c.name} ${c.slug}`}
+      searchPlaceholder="חיפוש מועדון…"
+      emptyMessage="עדיין אין מועדונים."
+    />
   );
 }
