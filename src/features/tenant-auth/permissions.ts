@@ -19,6 +19,8 @@ export const PERMISSION_KEYS = [
   "payments.view",
   "payments.charge",
   "reports.view",
+  "trainings.view",
+  "trainings.manage",
   "users.view",
   "users.manage",
   "settings.manage",
