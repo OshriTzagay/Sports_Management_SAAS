@@ -139,6 +139,28 @@ export async function changeStaffRoleAction(formData: FormData): Promise<void> {
   revalidatePath("/tenant", "layout");
 }
 
+/** הסרת משתמש-צוות (Owner בלבד). soft-delete לשורה + מחיקת חשבון האימות. */
+export async function removeStaffAction(formData: FormData): Promise<void> {
+  const actor = await requirePermission("users.manage");
+  const userId = z.string().uuid().parse(formData.get("userId"));
+
+  if (userId === actor.id) {
+    throw new Error("לא ניתן להסיר את המשתמש של עצמך");
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("users")
+    .update({ deleted_at: new Date().toISOString(), status: "inactive" })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+
+  // מחיקת חשבון האימות — משחרר את האימייל/טלפון לשימוש חוזר וחוסם כניסה מוחלטת.
+  await adminDeleteAuthUser(userId);
+
+  revalidatePath("/tenant", "layout");
+}
+
 /** הפעלה/השבתה של משתמש-צוות (Owner בלבד). אסור לשנות את הסטטוס של עצמך. */
 export async function setStaffStatusAction(formData: FormData): Promise<void> {
   const actor = await requirePermission("users.manage");

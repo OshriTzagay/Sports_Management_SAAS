@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-import { changeStaffRoleAction, setStaffStatusAction } from "./actions";
+import {
+  changeStaffRoleAction,
+  removeStaffAction,
+  setStaffStatusAction,
+} from "./actions";
 import type { AssignableRole, StaffUser } from "./types";
 
 const STATUS_LABEL = { active: "פעיל", inactive: "מושבת" } as const;
@@ -88,7 +92,7 @@ export function StaffEditor({
         {staff.status === "active" ? (
           <Button
             type="button"
-            variant="destructive"
+            variant="secondary"
             size="sm"
             disabled={pending}
             onClick={() =>
@@ -118,6 +122,29 @@ export function StaffEditor({
             הפעלה
           </Button>
         )}
+      </div>
+
+      <div className="border-border flex items-center justify-between gap-2 border-t pt-4">
+        <span className="text-text-muted text-xs">
+          הסרה מוחקת את המשתמש וגישתו לצמיתות.
+        </span>
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          disabled={pending}
+          onClick={() => {
+            if (
+              confirm(
+                `להסיר את ${staff.full_name ?? staff.email}? הפעולה בלתי הפיכה.`,
+              )
+            ) {
+              run(removeStaffAction, { userId: staff.id }, onDone);
+            }
+          }}
+        >
+          הסרת משתמש
+        </Button>
       </div>
 
       {error && <p className="text-danger text-sm">{error}</p>}

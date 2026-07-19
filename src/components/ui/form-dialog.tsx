@@ -51,16 +51,19 @@ export function FormDialog({
         onClick={(e) => {
           if (e.target === ref.current) close();
         }}
-        className="border-border bg-bg-surface text-text-body relative m-auto w-[min(92vw,30rem)] overflow-hidden rounded-lg border p-0 shadow-lg backdrop:bg-black/40"
+        className="border-border bg-bg-surface text-text-body relative m-auto w-[min(92vw,30rem)] overflow-visible rounded-lg border p-0 shadow-lg backdrop:bg-black/40"
       >
         {logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoUrl}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 m-auto size-56 object-contain opacity-[0.05]"
-          />
+          // עטיפה חתוכה כדי שהסימן-מים יישאר בגבולות הכרטיס גם כשה-dialog אינו חותך (בשביל popovers).
+          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={logoUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 m-auto size-56 object-contain opacity-[0.05]"
+            />
+          </div>
         )}
         <div className="relative flex flex-col gap-4 p-6">
           <div className="flex items-center justify-between">
