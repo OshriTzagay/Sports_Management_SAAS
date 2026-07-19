@@ -44,9 +44,28 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   };
 }
 
-/** שער כניסה לאזור המועדון (default-deny): מפנה ל-login אם לא מחובר. */
+/**
+ * שער כניסה לאזור המועדון (default-deny).
+ * מבחין בין "לא מחובר" (→ /login) ל"מחובר אך הושבת/הוסר" (→ /login?reason=disabled),
+ * כדי שהמשתמש יקבל הודעה במקום להיזרק בשקט.
+ */
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  return user;
+  if (user) return user;
+
+  // אין משתמש תקף — האם יש session פעיל (הושבת/הוסר) או פשוט לא מחובר?
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (authUser) {
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // כישלון ניתוק לא צריך לחסום את ההפניה עם ההודעה.
+    }
+    redirect("/login?reason=disabled");
+  }
+  redirect("/login");
 }
