@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireUser } from "@/features/tenant-auth";
+import { requirePermission } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const schema = z.object({
@@ -28,7 +28,7 @@ export async function updateBrandingAction(
   _prev: UpdateBrandingState,
   formData: FormData,
 ): Promise<UpdateBrandingState> {
-  const user = await requireUser();
+  const user = await requirePermission("settings.manage");
 
   const parsed = schema.safeParse({
     displayName: formData.get("displayName"),
@@ -63,7 +63,7 @@ export async function uploadLogoAction(
   _prev: UploadLogoState,
   formData: FormData,
 ): Promise<UploadLogoState> {
-  const user = await requireUser();
+  const user = await requirePermission("settings.manage");
 
   const file = formData.get("logo");
   if (!(file instanceof File) || file.size === 0) {

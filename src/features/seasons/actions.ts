@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { z } from "zod";
 
-import { requireUser } from "@/features/tenant-auth";
+import { requirePermission, requireUser } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toUserMessage } from "@/lib/db-error";
 import { SEASON_COOKIE } from "./queries";
@@ -32,7 +32,7 @@ export async function createSeasonAction(
   _prev: CreateSeasonState,
   formData: FormData,
 ): Promise<CreateSeasonState> {
-  const user = await requireUser();
+  const user = await requirePermission("seasons.manage");
 
   const parsed = createSchema.safeParse({
     name: formData.get("name"),
@@ -84,7 +84,7 @@ export async function updateSeasonAction(
   _prev: CreateSeasonState,
   formData: FormData,
 ): Promise<CreateSeasonState> {
-  await requireUser();
+  await requirePermission("seasons.manage");
 
   const parsed = updateSchema.safeParse({
     seasonId: formData.get("seasonId"),
@@ -113,7 +113,7 @@ export async function updateSeasonAction(
 
 /** הפעלת עונה (מכבה את הקודמת — עונה פעילה אחת למועדון). */
 export async function activateSeasonAction(formData: FormData): Promise<void> {
-  await requireUser();
+  await requirePermission("seasons.manage");
   const seasonId = z.string().uuid().parse(formData.get("seasonId"));
 
   const supabase = await createServerSupabaseClient();
@@ -127,7 +127,7 @@ export async function activateSeasonAction(formData: FormData): Promise<void> {
 
 /** סגירת עונה (read-only). */
 export async function closeSeasonAction(formData: FormData): Promise<void> {
-  await requireUser();
+  await requirePermission("seasons.manage");
   const seasonId = z.string().uuid().parse(formData.get("seasonId"));
 
   const supabase = await createServerSupabaseClient();
@@ -142,7 +142,7 @@ export async function closeSeasonAction(formData: FormData): Promise<void> {
 
 /** פתיחה מחדש של עונה סגורה (מחזיר ל-active). */
 export async function reopenSeasonAction(formData: FormData): Promise<void> {
-  await requireUser();
+  await requirePermission("seasons.manage");
   const seasonId = z.string().uuid().parse(formData.get("seasonId"));
 
   const supabase = await createServerSupabaseClient();

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireUser } from "@/features/tenant-auth";
+import { requirePermission } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toUserMessage } from "@/lib/db-error";
 
@@ -27,7 +27,7 @@ export async function createPlayerAction(
   _prev: CreatePlayerState,
   formData: FormData,
 ): Promise<CreatePlayerState> {
-  const user = await requireUser();
+  const user = await requirePermission("players.manage");
 
   const parsed = createSchema.safeParse({
     firstName: formData.get("firstName"),
@@ -100,7 +100,7 @@ export async function updatePlayerAction(
   _prev: CreatePlayerState,
   formData: FormData,
 ): Promise<CreatePlayerState> {
-  const user = await requireUser();
+  const user = await requirePermission("players.manage");
 
   const parsed = updateSchema.safeParse({
     playerId: formData.get("playerId"),

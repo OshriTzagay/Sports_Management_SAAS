@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireUser } from "@/features/tenant-auth";
+import { requirePermission } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toUserMessage } from "@/lib/db-error";
 
@@ -28,7 +28,7 @@ export async function createCoachAction(
   _prev: CreateCoachState,
   formData: FormData,
 ): Promise<CreateCoachState> {
-  const user = await requireUser();
+  const user = await requirePermission("coaches.manage");
 
   const parsed = createSchema.safeParse({
     firstName: formData.get("firstName"),
@@ -66,7 +66,7 @@ export async function updateCoachAction(
   _prev: CreateCoachState,
   formData: FormData,
 ): Promise<CreateCoachState> {
-  await requireUser();
+  await requirePermission("coaches.manage");
 
   const parsed = updateSchema.safeParse({
     coachId: formData.get("coachId"),
@@ -103,7 +103,7 @@ export async function updateCoachAction(
 export async function addCoachAssignmentAction(
   formData: FormData,
 ): Promise<{ error: string | null }> {
-  const user = await requireUser();
+  const user = await requirePermission("coaches.manage");
   const parsed = z
     .object({
       coachId: z.string().uuid(),
@@ -139,7 +139,7 @@ export async function addCoachAssignmentAction(
 export async function removeCoachAssignmentAction(
   formData: FormData,
 ): Promise<void> {
-  await requireUser();
+  await requirePermission("coaches.manage");
   const assignmentId = z.string().uuid().parse(formData.get("assignmentId"));
 
   const supabase = await createServerSupabaseClient();

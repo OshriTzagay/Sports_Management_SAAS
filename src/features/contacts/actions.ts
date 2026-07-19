@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireUser } from "@/features/tenant-auth";
+import { requirePermission } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toUserMessage } from "@/lib/db-error";
 
@@ -30,7 +30,7 @@ export async function createContactAction(
   _prev: ContactFormState,
   formData: FormData,
 ): Promise<ContactFormState> {
-  const user = await requireUser();
+  const user = await requirePermission("contacts.manage");
 
   const parsed = baseSchema.safeParse({
     firstName: formData.get("firstName"),
@@ -63,7 +63,7 @@ export async function updateContactAction(
   _prev: ContactFormState,
   formData: FormData,
 ): Promise<ContactFormState> {
-  await requireUser();
+  await requirePermission("contacts.manage");
 
   const parsed = updateSchema.safeParse({
     contactId: formData.get("contactId"),
@@ -94,7 +94,7 @@ export async function updateContactAction(
 
 /** מחיקה רכה של איש קשר. */
 export async function deleteContactAction(formData: FormData): Promise<void> {
-  await requireUser();
+  await requirePermission("contacts.manage");
   const contactId = z.string().uuid().parse(formData.get("contactId"));
 
   const supabase = await createServerSupabaseClient();
@@ -119,7 +119,7 @@ const relationshipEnum = z.enum([
 export async function addPlayerContactAction(
   formData: FormData,
 ): Promise<{ error: string | null }> {
-  const user = await requireUser();
+  const user = await requirePermission("contacts.manage");
   const parsed = z
     .object({
       playerId: z.string().uuid(),
@@ -152,7 +152,7 @@ export async function addPlayerContactAction(
 export async function removePlayerContactAction(
   formData: FormData,
 ): Promise<void> {
-  await requireUser();
+  await requirePermission("contacts.manage");
   const linkId = z.string().uuid().parse(formData.get("linkId"));
 
   const supabase = await createServerSupabaseClient();
@@ -169,7 +169,7 @@ export async function removePlayerContactAction(
 export async function setBillingContactAction(
   formData: FormData,
 ): Promise<void> {
-  await requireUser();
+  await requirePermission("contacts.manage");
   const parsed = z
     .object({ playerId: z.string().uuid(), linkId: z.string().uuid() })
     .parse({

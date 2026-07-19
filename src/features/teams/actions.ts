@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireUser } from "@/features/tenant-auth";
+import { requirePermission } from "@/features/tenant-auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toUserMessage } from "@/lib/db-error";
 
@@ -24,7 +24,7 @@ export async function createTeamAction(
   _prev: CreateTeamState,
   formData: FormData,
 ): Promise<CreateTeamState> {
-  const user = await requireUser();
+  const user = await requirePermission("teams.manage");
 
   const parsed = createSchema.safeParse({
     name: formData.get("name"),
@@ -65,7 +65,7 @@ export async function updateTeamAction(
   _prev: CreateTeamState,
   formData: FormData,
 ): Promise<CreateTeamState> {
-  await requireUser();
+  await requirePermission("teams.manage");
 
   const parsed = updateSchema.safeParse({
     teamId: formData.get("teamId"),
@@ -91,7 +91,7 @@ export async function updateTeamAction(
 
 /** מחיקה רכה של קבוצה (soft-delete). */
 export async function deleteTeamAction(formData: FormData): Promise<void> {
-  await requireUser();
+  await requirePermission("teams.manage");
   const teamId = z.string().uuid().parse(formData.get("teamId"));
 
   const supabase = await createServerSupabaseClient();
