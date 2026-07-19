@@ -102,7 +102,7 @@ Owner יכול גם **לשנות role** ו**להשבית** (status=inactive / so
 - [x] **מסך ניהול צוות** (`/team`, feature `staff`) — DataTable של משתמשים, הזמנה, שינוי role, הפעלה/השבתה. self-guard (אי-אפשר לשנות role/status של עצמך). `getCurrentUser` חוסם משתמש מושבת.
 - [x] **הזמנת משתמש** — `inviteStaffAction` יוצר auth user דרך Admin API עם `app_metadata.club_id`, משייך role, מחזיר **סיסמה זמנית חד-פעמית** (מוצגת למזמין), עם פיצוי (מחיקת auth user) אם ה-insert נכשל. *(עקבי עם provisionClub. מעבר להזמנה במייל = החלפת שכבת ההעברה בלבד, כשיוגדר SMTP.)*
 - [x] **מסך התחברות משודרג** — טאבים אימייל/סיסמה + **SMS OTP** (`sendPhoneOtp`/`verifyPhoneOtp`, `shouldCreateUser:false`). הזמנה תומכת בטלפון אופציונלי (`phone_confirm`) לכניסה ב-SMS. *(דורש הפעלת Phone provider + Twilio ב-Dashboard — ראה §9.)*
-- [ ] **עמוד "החלפת סיסמה בכניסה ראשונה"** (הסיסמה הזמנית עדיין תקפה ללא הכרח החלפה).
+- [x] **עמוד "בחירת סיסמה חדשה"** (`/set-password`) + `updatePasswordAction`. נגיש דרך "שכחתי סיסמה → איפוס עם SMS" (כניסה ב-OTP ואז קביעת סיסמה). *(נותר: **לכפות** החלפה בכניסה הראשונה — כרגע רשות.)*
 - [ ] **audit log** לפעולות צוות/הרשאות (טבלת `audit_logs` כבר קיימת).
 
 ## 9. הגדרת Twilio ל-SMS (צד ה-Dashboard — לא בקוד)
