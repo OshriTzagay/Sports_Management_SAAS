@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { RowModal } from "@/components/ui/row-modal";
+import type { Coach } from "@/features/coaches";
 import { StaffEditor } from "./staff-editor";
 import type { AssignableRole, StaffUser } from "./types";
 
@@ -13,10 +14,12 @@ const STATUS_LABEL = { active: "פעיל", inactive: "מושבת" } as const;
 export function StaffList({
   staff,
   roles,
+  coaches,
   currentUserId,
 }: {
   staff: StaffUser[];
   roles: AssignableRole[];
+  coaches: Coach[];
   currentUserId: string;
 }) {
   const [selected, setSelected] = useState<StaffUser | null>(null);
@@ -91,6 +94,7 @@ export function StaffList({
             key={selected.id}
             staff={selected}
             roles={roles}
+            coaches={coaches}
             isSelf={selected.id === currentUserId}
             onDone={close}
           />

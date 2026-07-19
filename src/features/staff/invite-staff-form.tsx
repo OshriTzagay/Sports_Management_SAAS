@@ -6,17 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Spinner } from "@/components/ui/spinner";
+import type { Coach } from "@/features/coaches";
 import { inviteStaffAction, type InviteStaffState } from "./actions";
 import type { AssignableRole } from "./types";
 
 const initialState: InviteStaffState = { status: "idle" };
 
-export function InviteStaffForm({ roles }: { roles: AssignableRole[] }) {
+export function InviteStaffForm({
+  roles,
+  coaches,
+}: {
+  roles: AssignableRole[];
+  coaches: Coach[];
+}) {
   const [state, formAction, pending] = useActionState(
     inviteStaffAction,
     initialState,
   );
   const [roleId, setRoleId] = useState("");
+  const [coachId, setCoachId] = useState("");
 
   if (state.status === "success") {
     return (
@@ -51,6 +59,20 @@ export function InviteStaffForm({ roles }: { roles: AssignableRole[] }) {
         placeholder="תפקיד…"
         searchPlaceholder="חיפוש תפקיד…"
       />
+      {coaches.length > 0 && (
+        <SearchableSelect
+          name="coachId"
+          value={coachId}
+          onChange={setCoachId}
+          options={coaches.map((c) => ({
+            value: c.id,
+            label: `${c.first_name} ${c.last_name}`,
+          }))}
+          emptyLabel="— ללא —"
+          placeholder="קישור לכרטיס מאמן (לניהול אימונים — אופציונלי)"
+          searchPlaceholder="חיפוש מאמן…"
+        />
+      )}
       {state.status === "error" && (
         <p className="text-danger text-sm">{state.error}</p>
       )}

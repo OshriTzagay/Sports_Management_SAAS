@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import type { Coach } from "@/features/coaches";
 import {
   changeStaffRoleAction,
+  linkStaffCoachAction,
   removeStaffAction,
   setStaffStatusAction,
 } from "./actions";
@@ -18,17 +20,20 @@ const STATUS_LABEL = { active: "פעיל", inactive: "מושבת" } as const;
 export function StaffEditor({
   staff,
   roles,
+  coaches,
   isSelf,
   onDone,
 }: {
   staff: StaffUser;
   roles: AssignableRole[];
+  coaches: Coach[];
   isSelf: boolean;
   onDone: () => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [roleId, setRoleId] = useState(staff.role_id ?? "");
+  const [coachId, setCoachId] = useState(staff.coach_id ?? "");
   const [error, setError] = useState<string | null>(null);
 
   function run(
@@ -84,6 +89,37 @@ export function StaffEditor({
           </Button>
         </div>
       </label>
+
+      {coaches.length > 0 && (
+        <label className="text-text-muted border-border flex flex-col gap-1 border-t pt-4 text-xs">
+          כרטיס מאמן (לניהול אימונים)
+          <div className="flex gap-2">
+            <SearchableSelect
+              value={coachId}
+              onChange={setCoachId}
+              options={coaches.map((c) => ({
+                value: c.id,
+                label: `${c.first_name} ${c.last_name}`,
+              }))}
+              emptyLabel="— ללא —"
+              placeholder="בחירת מאמן…"
+              searchPlaceholder="חיפוש מאמן…"
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={pending || coachId === (staff.coach_id ?? "")}
+              className="shrink-0"
+              onClick={() =>
+                run(linkStaffCoachAction, { userId: staff.id, coachId })
+              }
+            >
+              שמירה
+            </Button>
+          </div>
+        </label>
+      )}
 
       <div className="border-border flex items-center justify-between gap-2 border-t pt-4">
         <span className="text-text-muted text-xs">

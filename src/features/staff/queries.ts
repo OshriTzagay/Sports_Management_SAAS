@@ -10,6 +10,8 @@ type RawStaffRow = {
   full_name: string | null;
   status: StaffStatus;
   role_id: string | null;
+  person_type: string | null;
+  person_id: string | null;
   roles: { name: string } | { name: string }[] | null;
 };
 
@@ -18,7 +20,9 @@ export async function listStaff(): Promise<StaffUser[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("users")
-    .select("id, email, full_name, status, role_id, roles(name)")
+    .select(
+      "id, email, full_name, status, role_id, person_type, person_id, roles(name)",
+    )
     .is("deleted_at", null)
     .order("created_at");
   if (error) throw new Error(error.message);
@@ -33,6 +37,7 @@ export async function listStaff(): Promise<StaffUser[]> {
       status: row.status,
       role_id: row.role_id,
       role_name: role?.name ?? null,
+      coach_id: row.person_type === "coach" ? row.person_id : null,
     };
   });
 }

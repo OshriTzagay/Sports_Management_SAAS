@@ -8,6 +8,8 @@ export interface StaffUser {
   role_id: string | null;
   role_name: string | null;
   status: StaffStatus;
+  /** כרטיס המאמן המקושר (person_type='coach'), אם קיים. */
+  coach_id: string | null;
 }
 
 /** תפקיד שניתן לשייך למשתמש (מטבלת roles של המועדון). */

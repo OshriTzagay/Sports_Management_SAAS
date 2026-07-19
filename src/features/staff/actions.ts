@@ -15,6 +15,11 @@ function generateTempPassword(): string {
   return randomBytes(9).toString("base64url");
 }
 
+const optionalUuid = z
+  .union([z.string().uuid(), z.literal("")])
+  .optional()
+  .transform((v) => (v ? v : null));
+
 const inviteSchema = z.object({
   fullName: z.string().trim().min(2, "שם מלא נדרש"),
   email: z.string().trim().email("אימייל לא תקין"),
@@ -24,6 +29,7 @@ const inviteSchema = z.object({
     .trim()
     .optional()
     .transform((v) => (v ? v : null)),
+  coachId: optionalUuid,
 });
 
 export type InviteStaffState =
@@ -47,6 +53,7 @@ export async function inviteStaffAction(
     email: formData.get("email"),
     roleId: formData.get("roleId"),
     phone: formData.get("phone"),
+    coachId: formData.get("coachId"),
   });
   if (!parsed.success) {
     return {
@@ -98,6 +105,9 @@ export async function inviteStaffAction(
     full_name: parsed.data.fullName,
     role_id: parsed.data.roleId,
     status: "active",
+    ...(parsed.data.coachId
+      ? { person_type: "coach", person_id: parsed.data.coachId }
+      : {}),
   });
   if (error) {
     await adminDeleteAuthUser(newUserId); // פיצוי — לא להשאיר משתמש אימות יתום
@@ -157,6 +167,42 @@ export async function removeStaffAction(formData: FormData): Promise<void> {
 
   // מחיקת חשבון האימות — משחרר את האימייל/טלפון לשימוש חוזר וחוסם כניסה מוחלטת.
   await adminDeleteAuthUser(userId);
+
+  revalidatePath("/tenant", "layout");
+}
+
+/** קישור/ניתוק משתמש לכרטיס מאמן (Owner בלבד). מאפשר למאמן לנהל אימונים. */
+export async function linkStaffCoachAction(formData: FormData): Promise<void> {
+  await requirePermission("users.manage");
+  const parsed = z
+    .object({ userId: z.string().uuid(), coachId: optionalUuid })
+    .parse({
+      userId: formData.get("userId"),
+      coachId: formData.get("coachId"),
+    });
+
+  const supabase = await createServerSupabaseClient();
+
+  if (parsed.coachId) {
+    // ודא שכרטיס המאמן שייך למועדון (RLS מחזיר רק את מאמני המועדון).
+    const { data: coach } = await supabase
+      .from("coaches")
+      .select("id")
+      .eq("id", parsed.coachId)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (!coach) throw new Error("כרטיס מאמן לא תקין");
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update(
+      parsed.coachId
+        ? { person_type: "coach", person_id: parsed.coachId }
+        : { person_type: null, person_id: null },
+    )
+    .eq("id", parsed.userId);
+  if (error) throw new Error(error.message);
 
   revalidatePath("/tenant", "layout");
 }
