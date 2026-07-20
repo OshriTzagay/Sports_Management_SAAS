@@ -2,6 +2,7 @@
 // רכיבי client מייבאים actions ישירות מ-./actions (גבול ה-RPC).
 export {
   listPlayers,
+  listTeamRoster,
   listSeasonAssignments,
   type SeasonAssignment,
 } from "./queries";

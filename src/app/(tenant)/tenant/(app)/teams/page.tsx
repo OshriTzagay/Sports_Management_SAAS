@@ -27,7 +27,7 @@ export default async function TeamsPage() {
     );
   }
 
-  const readOnly = !season.is_active || !perms.has("teams.manage");
+  const canCreate = season.is_active && perms.has("teams.manage");
   const teams = await listTeams(season.id);
 
   return (
@@ -36,16 +36,18 @@ export default async function TeamsPage() {
         <h1 className="text-text-primary text-xl font-bold">קבוצות</h1>
         <div className="flex items-center gap-3">
           <span className="text-text-muted text-sm">עונה: {season.name}</span>
-          {readOnly ? (
-            <Badge variant="muted">צפייה בלבד</Badge>
-          ) : (
+          {canCreate ? (
             <FormDialog triggerLabel="+ קבוצה" title="קבוצה חדשה">
               <CreateTeamForm seasonId={season.id} />
             </FormDialog>
+          ) : (
+            !perms.has("teams.manage") && (
+              <Badge variant="muted">צפייה בלבד</Badge>
+            )
           )}
         </div>
       </div>
-      <TeamList teams={teams} readOnly={readOnly} />
+      <TeamList teams={teams} />
     </div>
   );
 }

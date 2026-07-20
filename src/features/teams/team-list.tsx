@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
-import { RowModal } from "@/components/ui/row-modal";
-import { EditTeamForm } from "./edit-team-form";
 import type { Team } from "./types";
 
 const columns: DataTableColumn<Team>[] = [
@@ -27,41 +25,18 @@ const columns: DataTableColumn<Team>[] = [
   },
 ];
 
-export function TeamList({
-  teams,
-  readOnly = false,
-}: {
-  teams: Team[];
-  readOnly?: boolean;
-}) {
-  const [selected, setSelected] = useState<Team | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  const open = (team: Team) => {
-    if (readOnly) return;
-    setSelected(team);
-    dialogRef.current?.showModal();
-  };
-  const close = useCallback(() => dialogRef.current?.close(), []);
+/** רשימת קבוצות — לחיצה על שורה פותחת את עמוד הסגל (/teams/[id]). */
+export function TeamList({ teams }: { teams: Team[] }) {
+  const router = useRouter();
 
   return (
-    <>
-      <DataTable
-        columns={columns}
-        rows={teams}
-        rowKey={(t) => t.id}
-        onRowClick={readOnly ? undefined : open}
-        searchPlaceholder="חיפוש קבוצה…"
-        emptyMessage="אין קבוצות בעונה זו."
-      />
-
-      {!readOnly && (
-        <RowModal dialogRef={dialogRef} title="עריכת קבוצה" onClose={close}>
-          {selected && (
-            <EditTeamForm key={selected.id} team={selected} onClose={close} />
-          )}
-        </RowModal>
-      )}
-    </>
+    <DataTable
+      columns={columns}
+      rows={teams}
+      rowKey={(t) => t.id}
+      onRowClick={(t) => router.push(`/teams/${t.id}`)}
+      searchPlaceholder="חיפוש קבוצה…"
+      emptyMessage="אין קבוצות בעונה זו."
+    />
   );
 }
