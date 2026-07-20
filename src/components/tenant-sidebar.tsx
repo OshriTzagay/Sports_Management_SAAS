@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ClipboardList,
   Contact,
+  CreditCard,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -33,6 +34,8 @@ interface NavItem {
   staffOnly?: boolean;
   /** מוצג רק למאמן מקושר (person_type='coach'). */
   coachOnly?: boolean;
+  /** מוצג רק למי שיכול לצפות בתשלומים (payments.view). */
+  paymentsOnly?: boolean;
 }
 
 const NAV: NavItem[] = [
@@ -43,6 +46,7 @@ const NAV: NavItem[] = [
   { href: "/coaches", label: "מאמנים", icon: ClipboardList },
   { href: "/trainings", label: "אימונים", icon: Timer, coachOnly: true },
   { href: "/contacts", label: "אנשי קשר", icon: Contact },
+  { href: "/payments", label: "תשלומים", icon: CreditCard, paymentsOnly: true },
   { href: "/team", label: "צוות", icon: UserCog, staffOnly: true },
   { href: "/settings", label: "הגדרות", icon: Settings },
 ];
@@ -59,6 +63,7 @@ export function TenantSidebar({
   logoUrl,
   canManageStaff = false,
   isCoach = false,
+  canViewPayments = false,
 }: {
   userEmail: string;
   seasons: Season[];
@@ -67,12 +72,15 @@ export function TenantSidebar({
   logoUrl: string | null;
   canManageStaff?: boolean;
   isCoach?: boolean;
+  canViewPayments?: boolean;
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const navItems = NAV.filter(
     (item) =>
-      (!item.staffOnly || canManageStaff) && (!item.coachOnly || isCoach),
+      (!item.staffOnly || canManageStaff) &&
+      (!item.coachOnly || isCoach) &&
+      (!item.paymentsOnly || canViewPayments),
   );
 
   useEffect(() => {

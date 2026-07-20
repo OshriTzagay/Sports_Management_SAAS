@@ -44,6 +44,7 @@ export default async function TenantAppLayout({
         logoUrl={logoUrl}
         canManageStaff={permissions.has("users.manage")}
         isCoach={coachId !== null}
+        canViewPayments={permissions.has("payments.view")}
       />
       <main className="min-w-0 flex-1 p-5 lg:p-7">
         <div className="mx-auto w-full max-w-[1600px]">
