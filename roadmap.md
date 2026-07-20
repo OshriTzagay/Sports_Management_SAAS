@@ -77,6 +77,36 @@
 - [ ] פעילויות / לוח אימונים / נוכחות (אם רלוונטי)
 - [ ] Subscription billing למודל ה-SaaS שלך + plan limits
 
+## Phase 5 — העלאה לאוויר (Go-Live), אונבורדינג ו-Ops
+
+> רץ כשה-MVP מוכן (סוף Phase 2/3), לא חייב להמתין ל-Phase 4.
+> ארוח: **Vercel** (אפליקציה) + **Supabase** (DB). **Droplet**: גיבוי חיצוני + staging.
+> פירוט מלא + הוראות: `docs/deployment.md`.
+
+**אירוח ופריסה**
+- [ ] Vercel: חיבור ריפו, deploy אוטומטי מ-main, env vars (סודות רק כאן, לא בריפו)
+- [ ] Supabase Pro + **PITR** מופעל
+- [ ] סביבת **staging** נפרדת (Supabase project נפרד + Vercel preview)
+- [ ] **CI** (GitHub Actions): typecheck + lint + build + DB tests על כל PR
+
+**אונבורדינג מועדונים (בקליקים + דומיין)**
+- [ ] Wildcard DNS `*.domain` → Vercel + wildcard SSL
+- [ ] אימות routing subdomain בפרוד; מועדון חדש = `provisionClub` → זמין ב-`slug.domain`
+- [ ] (בהמשך) דומיינים מותאמים פר-מועדון (Vercel Domains API + אימות)
+
+**אבטחה (לפני go-live)**
+- [ ] **RLS audit** — ודא RLS מופעל על כל הטבלאות
+- [ ] security headers (CSP/HSTS/X-Frame-Options) ב-`next.config`
+- [ ] rate limiting על auth / webhook / תשלום
+- [ ] אימות חתימת webhook + idempotency (Batch 4 תשלומים)
+- [ ] `pnpm audit` + עדכוני תלויות; סיבוב סודות תקופתי
+
+**גיבויים וזמינות**
+- [ ] Supabase PITR + `pg_dump` יומי off-site ל-**Droplet**
+- [ ] **בדיקת שחזור** (גיבוי לא-בדוק = לא גיבוי)
+- [ ] health check + uptime monitor + error tracking (Sentry)
+- [ ] runbook: provision מועדון, סבב סודות, שחזור גיבוי
+
 ---
 
 ## כלל זהב
