@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { redirect } from "next/navigation";
 
 import { TenantSidebar } from "@/components/tenant-sidebar";
 import { BrandingLogoProvider } from "@/components/branding-logo-provider";
@@ -18,6 +19,8 @@ export default async function TenantAppLayout({
   children: ReactNode;
 }) {
   const user = await requireUser();
+  if (user.must_change_password) redirect("/set-password");
+
   const [seasons, selectedSeason, branding, permissions, coachId] =
     await Promise.all([
       listSeasons(),

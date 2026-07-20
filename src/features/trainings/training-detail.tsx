@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import {
+  cancelTrainingAction,
   endTrainingAction,
   setAttendanceAction,
   startTrainingAction,
@@ -118,16 +119,30 @@ export function TrainingDetail({
         <div className="border-border bg-bg-surface flex flex-col items-center gap-4 rounded-lg border p-8 text-center">
           <p className="text-text-muted text-sm">האימון מתוזמן ומוכן להתחלה.</p>
           {canManage ? (
-            <Button
-              type="button"
-              disabled={pending}
-              className="h-12 w-full max-w-xs text-base"
-              onClick={() =>
-                run(startTrainingAction, { sessionId: session.id })
-              }
-            >
-              {pending ? <Spinner className="size-5" /> : "התחלת אימון"}
-            </Button>
+            <div className="flex w-full max-w-xs flex-col gap-2">
+              <Button
+                type="button"
+                disabled={pending}
+                className="h-12 w-full text-base"
+                onClick={() =>
+                  run(startTrainingAction, { sessionId: session.id })
+                }
+              >
+                {pending ? <Spinner className="size-5" /> : "התחלת אימון"}
+              </Button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  if (confirm("לבטל את האימון?")) {
+                    run(cancelTrainingAction, { sessionId: session.id });
+                  }
+                }}
+                className="text-text-muted hover:text-danger text-xs underline"
+              >
+                ביטול אימון
+              </button>
+            </div>
           ) : (
             <p className="text-text-muted text-xs">
               אין לך הרשאה לנהל אימון זה.

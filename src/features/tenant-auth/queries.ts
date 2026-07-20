@@ -26,7 +26,9 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
   const { data } = await supabase
     .from("users")
-    .select("id, club_id, email, full_name, role_id, status")
+    .select(
+      "id, club_id, email, full_name, role_id, status, must_change_password",
+    )
     .eq("id", user.id)
     .is("deleted_at", null)
     .maybeSingle();
@@ -41,6 +43,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     email: row.email,
     full_name: row.full_name,
     role_id: row.role_id,
+    must_change_password: row.must_change_password,
   };
 }
 

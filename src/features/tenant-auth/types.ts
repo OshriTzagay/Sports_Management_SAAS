@@ -5,4 +5,6 @@ export interface CurrentUser {
   email: string;
   full_name: string | null;
   role_id: string | null;
+  /** חובה להחליף סיסמה בכניסה הראשונה (סיסמה זמנית מהזמנה). */
+  must_change_password: boolean;
 }

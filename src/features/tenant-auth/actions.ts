@@ -114,5 +114,11 @@ export async function updatePasswordAction(
   });
   if (error) return { error: "עדכון הסיסמה נכשל" };
 
+  // ניקוי דגל "חובה להחליף סיסמה" (אם היה) — כניסה ראשונה הושלמה.
+  await supabase
+    .from("users")
+    .update({ must_change_password: false })
+    .eq("id", user.id);
+
   redirect("/");
 }

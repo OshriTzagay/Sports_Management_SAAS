@@ -105,6 +105,7 @@ export async function inviteStaffAction(
     full_name: parsed.data.fullName,
     role_id: parsed.data.roleId,
     status: "active",
+    must_change_password: true,
     ...(parsed.data.coachId
       ? { person_type: "coach", person_id: parsed.data.coachId }
       : {}),
