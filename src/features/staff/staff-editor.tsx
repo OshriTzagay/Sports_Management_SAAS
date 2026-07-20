@@ -4,12 +4,14 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import type { Coach } from "@/features/coaches";
 import {
   changeStaffRoleAction,
   linkStaffCoachAction,
   removeStaffAction,
+  setStaffPhoneAction,
   setStaffStatusAction,
 } from "./actions";
 import type { AssignableRole, StaffUser } from "./types";
@@ -34,6 +36,7 @@ export function StaffEditor({
   const [pending, startTransition] = useTransition();
   const [roleId, setRoleId] = useState(staff.role_id ?? "");
   const [coachId, setCoachId] = useState(staff.coach_id ?? "");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   function run(
@@ -55,11 +58,44 @@ export function StaffEditor({
     });
   }
 
+  const phoneSection = (
+    <label className="text-text-muted flex flex-col gap-1 text-xs">
+      טלפון לכניסה ב-SMS
+      <div className="flex gap-2">
+        <Input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          type="tel"
+          inputMode="tel"
+          placeholder="עדכון/הוספת טלפון — למשל 050-1234567"
+          className="flex-1"
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={pending || !phone}
+          className="shrink-0"
+          onClick={() =>
+            run(setStaffPhoneAction, { userId: staff.id, phone }, () =>
+              setPhone(""),
+            )
+          }
+        >
+          שמירה
+        </Button>
+      </div>
+    </label>
+  );
+
   if (isSelf) {
     return (
-      <p className="text-text-muted text-sm">
-        זהו המשתמש שלך — לא ניתן לשנות לעצמך תפקיד או סטטוס.
-      </p>
+      <div className="flex flex-col gap-4">
+        <p className="text-text-muted text-sm">
+          זהו המשתמש שלך — ניתן לעדכן טלפון לכניסה, אך לא לשנות תפקיד/סטטוס.
+        </p>
+        {phoneSection}
+        {error && <p className="text-danger text-sm">{error}</p>}
+      </div>
     );
   }
 
@@ -120,6 +156,8 @@ export function StaffEditor({
           </div>
         </label>
       )}
+
+      <div className="border-border border-t pt-4">{phoneSection}</div>
 
       <div className="border-border flex items-center justify-between gap-2 border-t pt-4">
         <span className="text-text-muted text-xs">

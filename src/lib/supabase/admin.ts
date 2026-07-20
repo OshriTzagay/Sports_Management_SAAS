@@ -49,6 +49,21 @@ export async function adminCreateAuthUser(
   return user.id;
 }
 
+/** מעדכן טלפון של משתמש אימות (מאושר מיידית) — לאפשר כניסה ב-SMS OTP. */
+export async function adminUpdateAuthUserPhone(
+  userId: string,
+  phone: string,
+): Promise<void> {
+  const res = await fetch(`${url}/auth/v1/admin/users/${userId}`, {
+    method: "PUT",
+    headers: adminHeaders(),
+    body: JSON.stringify({ phone, phone_confirm: true }),
+  });
+  if (!res.ok) {
+    throw new Error(`updateAuthUser failed: ${res.status} ${await res.text()}`);
+  }
+}
+
 /** מוחק משתמש אימות — לפיצוי (compensation) כשהקמת מועדון נכשלת באמצע. */
 export async function adminDeleteAuthUser(userId: string): Promise<void> {
   await fetch(`${url}/auth/v1/admin/users/${userId}`, {

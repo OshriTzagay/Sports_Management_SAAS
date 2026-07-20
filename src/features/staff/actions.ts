@@ -5,7 +5,11 @@ import { randomBytes } from "node:crypto";
 import { z } from "zod";
 
 import { requirePermission } from "@/features/tenant-auth";
-import { adminCreateAuthUser, adminDeleteAuthUser } from "@/lib/supabase/admin";
+import {
+  adminCreateAuthUser,
+  adminDeleteAuthUser,
+  adminUpdateAuthUserPhone,
+} from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { toUserMessage } from "@/lib/db-error";
 import { normalizeIsraeliPhone } from "@/lib/phone";
@@ -169,6 +173,17 @@ export async function removeStaffAction(formData: FormData): Promise<void> {
   // מחיקת חשבון האימות — משחרר את האימייל/טלפון לשימוש חוזר וחוסם כניסה מוחלטת.
   await adminDeleteAuthUser(userId);
 
+  revalidatePath("/tenant", "layout");
+}
+
+/** קביעת/עדכון טלפון למשתמש (Owner בלבד) — לאפשר כניסה ב-SMS OTP. */
+export async function setStaffPhoneAction(formData: FormData): Promise<void> {
+  await requirePermission("users.manage");
+  const userId = z.string().uuid().parse(formData.get("userId"));
+  const phone = normalizeIsraeliPhone(String(formData.get("phone") ?? ""));
+  if (!phone) throw new Error("מספר טלפון לא תקין");
+
+  await adminUpdateAuthUserPhone(userId, phone);
   revalidatePath("/tenant", "layout");
 }
 
