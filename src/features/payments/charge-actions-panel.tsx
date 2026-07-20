@@ -75,8 +75,15 @@ export function ChargeActionsPanel({
 
   return (
     <div className="flex flex-col gap-4">
+      {!charge.contact_id && (
+        <p className="bg-warning-bg text-warning-text rounded-md px-3 py-2 text-xs">
+          ⚠️ לשחקן אין איש קשר לחיוב — לא ניתן לשלוח קישור תשלום. הוסף איש קשר
+          וסמן אותו כ״משלם״ בכרטיס השחקן.
+        </p>
+      )}
       <dl className="border-border bg-bg-surface flex flex-col gap-1.5 rounded-lg border p-3 text-sm">
         <Row label="שחקן" value={charge.player_name} />
+        <Row label="איש קשר לחיוב" value={charge.contact_name ?? "לא הוגדר"} />
         <Row label="תיאור" value={charge.description} />
         {charge.discount_agorot > 0 && (
           <Row

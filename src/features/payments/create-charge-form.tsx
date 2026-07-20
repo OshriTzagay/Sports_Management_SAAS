@@ -12,7 +12,13 @@ import { createChargeAction, type CreateChargeState } from "./actions";
 
 const initialState: CreateChargeState = { error: null };
 
-export function CreateChargeForm({ players }: { players: Player[] }) {
+export function CreateChargeForm({
+  players,
+  playersWithBilling,
+}: {
+  players: Player[];
+  playersWithBilling: string[];
+}) {
   const [state, formAction, pending] = useActionState(
     createChargeAction,
     initialState,
@@ -28,6 +34,7 @@ export function CreateChargeForm({ players }: { players: Player[] }) {
   }, [pending, state.error, close]);
 
   const showReason = Number(discount) > 0;
+  const noBilling = playerId !== "" && !playersWithBilling.includes(playerId);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -45,6 +52,12 @@ export function CreateChargeForm({ players }: { players: Player[] }) {
           searchPlaceholder="חיפוש שחקן…"
         />
       </label>
+      {noBilling && (
+        <p className="bg-warning-bg text-warning-text rounded-md px-3 py-2 text-xs">
+          לשחקן זה אין איש קשר לחיוב. החיוב ייווצר, אך לא ניתן יהיה לשלוח קישור
+          תשלום עד שתגדיר איש קשר ״משלם״ בכרטיס השחקן.
+        </p>
+      )}
       <Input
         name="description"
         placeholder="תיאור — למשל דמי רישום 2026/27"
