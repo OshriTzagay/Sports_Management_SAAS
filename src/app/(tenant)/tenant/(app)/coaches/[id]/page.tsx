@@ -51,7 +51,7 @@ export default async function CoachDetailPage({
     new Date(coach.license_expiry) < new Date();
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <Link
           href="/coaches"
