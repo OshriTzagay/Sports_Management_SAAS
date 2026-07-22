@@ -13,6 +13,7 @@ const ADULT_AGE = 18;
 export type RegistrationFormState =
   | { status: "idle" }
   | { status: "error"; error: string }
+  | { status: "already_registered" }
   | {
       status: "created";
       registrationId: string;
@@ -86,34 +87,68 @@ export async function submitRegistrationAction(
   }
 
   const admin = createAdminSupabaseClient();
-  const { data, error } = await admin
+
+  // רישום קיים לאותו שחקן (ת.ז.) בעונה: כבר שולם → ידידותי; טיוטה → מיחזור.
+  const { data: existingData } = await admin
     .from("registrations")
-    .insert({
-      club_id: ctx.clubId,
-      season_id: ctx.seasonId,
-      status: "pending",
-      is_self: isSelf,
-      relationship,
-      player_first_name: playerFirst,
-      player_last_name: playerLast,
-      player_national_id: playerNationalId,
-      player_birth_date: birthDate,
-      contact_first_name: contactFirst,
-      contact_last_name: contactLast,
-      contact_national_id: contactNationalId,
-      contact_phone: phone,
-      contact_email: emailRaw || null,
-      amount_agorot: ctx.feeAgorot,
-      vat_rate: ctx.vatRate,
-      currency: ctx.currency,
-    })
-    .select("id")
-    .single();
-  if (error) return err("שמירת הרישום נכשלה");
+    .select("id, status")
+    .eq("club_id", ctx.clubId)
+    .eq("season_id", ctx.seasonId)
+    .eq("player_national_id", playerNationalId)
+    .order("created_at", { ascending: false });
+  const existing = (existingData ?? []) as { id: string; status: string }[];
+
+  if (existing.some((r) => r.status === "completed")) {
+    return { status: "already_registered" };
+  }
+  const reusable = existing.find(
+    (r) => r.status === "pending" || r.status === "failed",
+  );
+
+  const fields = {
+    is_self: isSelf,
+    relationship,
+    player_first_name: playerFirst,
+    player_last_name: playerLast,
+    player_national_id: playerNationalId,
+    player_birth_date: birthDate,
+    contact_first_name: contactFirst,
+    contact_last_name: contactLast,
+    contact_national_id: contactNationalId,
+    contact_phone: phone,
+    contact_email: emailRaw || null,
+    amount_agorot: ctx.feeAgorot,
+    vat_rate: ctx.vatRate,
+    currency: ctx.currency,
+  };
+
+  let registrationId: string;
+  if (reusable) {
+    // מיחזור טיוטה קיימת (ניסיון חוזר) — מעדכן פרטים, נשאר pending.
+    const { error } = await admin
+      .from("registrations")
+      .update({ ...fields, status: "pending" })
+      .eq("id", reusable.id);
+    if (error) return err("שמירת הרישום נכשלה");
+    registrationId = reusable.id;
+  } else {
+    const { data, error } = await admin
+      .from("registrations")
+      .insert({
+        club_id: ctx.clubId,
+        season_id: ctx.seasonId,
+        status: "pending",
+        ...fields,
+      })
+      .select("id")
+      .single();
+    if (error) return err("שמירת הרישום נכשלה");
+    registrationId = (data as { id: string }).id;
+  }
 
   return {
     status: "created",
-    registrationId: (data as { id: string }).id,
+    registrationId,
     amountAgorot: ctx.feeAgorot,
     currency: ctx.currency,
   };

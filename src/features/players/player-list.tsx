@@ -102,6 +102,14 @@ export function PlayerList({
       filter: { label: "קבוצה", value: (p) => teamOf(p) },
     },
     {
+      key: "joined",
+      header: "הצטרפות",
+      cell: (p) => (
+        <span className="text-text-muted">{formatDate(p.created_at)}</span>
+      ),
+      sortValue: (p) => p.created_at,
+    },
+    {
       key: "payment",
       header: "תשלום",
       cell: (p) => {

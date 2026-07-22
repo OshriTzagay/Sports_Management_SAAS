@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Check, CreditCard, User, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,15 @@ const ADULT_AGE = 18;
 const submitInitial: RegistrationFormState = { status: "idle" };
 const payInitial: PayState = { error: null };
 const selectClass =
-  "h-11 w-full rounded-md border border-border bg-bg-surface px-3 text-sm text-text-primary";
+  "h-11 w-full rounded-lg border border-border bg-bg-surface px-3 text-sm text-text-primary";
+const inputClass = "h-11 rounded-lg";
+
+const REL_LABELS: Record<string, string> = {
+  father: "אבא",
+  mother: "אמא",
+  guardian: "אפוטרופוס",
+  self: "עצמי",
+};
 
 const EMPTY = {
   playerFirstName: "",
@@ -34,43 +43,68 @@ const EMPTY = {
   contactPhone: "",
   contactEmail: "",
 };
+type FormData = typeof EMPTY;
 
-/** חיווי ✓/✗ חי מתחת לשדה. */
-function FieldHint({ ok, show }: { ok: boolean; show: boolean }) {
-  if (!show) return null;
-  return ok ? (
-    <span className="text-success-text text-[0.7rem]">✓ תקין</span>
-  ) : (
-    <span className="text-danger text-[0.7rem]">✗ בדוק שוב</span>
+function Progress({ step }: { step: 1 | 2 }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between text-xs font-medium">
+        <span className={step >= 1 ? "text-primary-700" : "text-text-muted"}>
+          1 · פרטים
+        </span>
+        <span className={step >= 2 ? "text-primary-700" : "text-text-muted"}>
+          2 · אישור ותשלום
+        </span>
+      </div>
+      <div className="bg-bg-muted h-1.5 overflow-hidden rounded-full">
+        <div
+          className="bg-primary-500 h-full rounded-full transition-all duration-300"
+          style={{ width: step === 1 ? "50%" : "100%" }}
+        />
+      </div>
+    </div>
   );
 }
 
-function Stepper({ step }: { step: 1 | 2 }) {
+function SectionHead({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="mb-4 flex items-center gap-2 text-xs">
-      {[
-        { n: 1, label: "פרטים" },
-        { n: 2, label: "תשלום" },
-      ].map((s, i) => (
-        <div key={s.n} className="flex items-center gap-2">
-          <span
-            className={
-              step >= s.n
-                ? "bg-primary-500 flex size-6 items-center justify-center rounded-full font-bold text-white"
-                : "bg-bg-muted text-text-muted flex size-6 items-center justify-center rounded-full"
-            }
-          >
-            {s.n}
-          </span>
-          <span
-            className={step >= s.n ? "text-text-primary" : "text-text-muted"}
-          >
-            {s.label}
-          </span>
-          {i === 0 && <span className="text-text-muted">›</span>}
-        </div>
-      ))}
+    <div className="text-text-primary flex items-center gap-2 text-sm font-bold">
+      <span className="bg-primary-50 text-primary-700 flex size-7 items-center justify-center rounded-lg">
+        {icon}
+      </span>
+      {children}
     </div>
+  );
+}
+
+function Field({
+  label,
+  ok,
+  showHint,
+  children,
+}: {
+  label: string;
+  ok?: boolean;
+  showHint?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-text-muted text-xs font-medium">{label}</span>
+      {children}
+      {showHint &&
+        (ok ? (
+          <span className="text-success-text text-[0.7rem]">✓ תקין</span>
+        ) : (
+          <span className="text-danger text-[0.7rem]">✗ בדוק שוב</span>
+        ))}
+    </label>
   );
 }
 
@@ -87,12 +121,27 @@ export function RegistrationForm({
     submitRegistrationAction,
     submitInitial,
   );
-  // controlled — כדי שהערכים ישרדו את איפוס-הטופס האוטומטי של React 19 בשגיאה.
-  const [form, setForm] = useState(EMPTY);
+  const [form, setForm] = useState<FormData>(EMPTY);
   const set =
-    (key: keyof typeof EMPTY) =>
+    (key: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  if (state.status === "already_registered") {
+    return (
+      <div className="flex flex-col items-center gap-3 py-8 text-center">
+        <span className="bg-success-bg text-success-text flex size-16 items-center justify-center rounded-full text-3xl">
+          ✓
+        </span>
+        <h2 className="text-text-primary text-xl font-bold">
+          השחקן כבר רשום לעונה
+        </h2>
+        <p className="text-text-muted text-sm">
+          קיימת הרשמה ששולמה עבור ת.ז. זו בעונה הנוכחית. אין צורך לשלם שוב.
+        </p>
+      </div>
+    );
+  }
 
   if (state.status === "created") {
     return (
@@ -100,7 +149,7 @@ export function RegistrationForm({
         registrationId={state.registrationId}
         amountAgorot={state.amountAgorot}
         currency={state.currency}
-        playerName={`${form.playerFirstName} ${form.playerLastName}`.trim()}
+        form={form}
       />
     );
   }
@@ -108,83 +157,90 @@ export function RegistrationForm({
   const age = calculateAge(form.birthDate);
   const isMinor = age !== null && age < ADULT_AGE;
   const isAdult = age !== null && age >= ADULT_AGE;
-  const showPayer = age !== null;
-
-  const playerIdOk = isValidIsraeliId(form.playerNationalId);
-  const contactIdOk = isValidIsraeliId(form.contactNationalId);
-  const phoneOk = normalizeIsraeliPhone(form.contactPhone) !== null;
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
-      <Stepper step={1} />
+    <form action={formAction} className="flex flex-col gap-5">
+      <Progress step={1} />
       <input type="hidden" name="slug" value={slug} />
 
-      <span className="text-text-muted text-xs font-medium">פרטי השחקן</span>
-      <div className="flex gap-2">
-        <Input
-          name="playerFirstName"
-          placeholder="שם פרטי"
-          autoComplete="given-name"
-          value={form.playerFirstName}
-          onChange={set("playerFirstName")}
-          required
-        />
-        <Input
-          name="playerLastName"
-          placeholder="שם משפחה"
-          autoComplete="family-name"
-          value={form.playerLastName}
-          onChange={set("playerLastName")}
-          required
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Input
-          name="playerNationalId"
-          placeholder="ת.ז. של השחקן"
-          inputMode="numeric"
-          value={form.playerNationalId}
-          onChange={set("playerNationalId")}
-          required
-        />
-        <FieldHint ok={playerIdOk} show={form.playerNationalId.length >= 5} />
-      </div>
-      <label className="text-text-muted flex flex-col gap-1 text-xs">
-        תאריך לידה
-        <Input
-          name="birthDate"
-          type="date"
-          value={form.birthDate}
-          onChange={set("birthDate")}
-          required
-        />
-      </label>
-
-      {/* אינדיקטור גיל — הענף הופך שקוף */}
-      {isMinor && (
-        <span className="bg-primary-50 text-primary-700 w-fit rounded-full px-3 py-1 text-xs">
-          שחקן קטין ({age}) · נדרשים פרטי הורה/משלם
-        </span>
-      )}
-      {isAdult && (
-        <div className="border-primary-300/40 bg-primary-50 text-primary-700 rounded-md border px-3 py-2 text-xs">
-          <span className="font-bold">אתה בוגר ({age}).</span> הפרטים שלמעלה הם
-          שלך כשחקן — ואתה נרשם ומשלם על עצמך. נותר רק טלפון ליצירת קשר.
+      <div className="flex flex-col gap-3">
+        <SectionHead icon={<User className="size-4" />}>פרטי השחקן</SectionHead>
+        <div className="flex gap-2">
+          <Input
+            name="playerFirstName"
+            placeholder="שם פרטי"
+            autoComplete="given-name"
+            className={inputClass}
+            value={form.playerFirstName}
+            onChange={set("playerFirstName")}
+            required
+          />
+          <Input
+            name="playerLastName"
+            placeholder="שם משפחה"
+            autoComplete="family-name"
+            className={inputClass}
+            value={form.playerLastName}
+            onChange={set("playerLastName")}
+            required
+          />
         </div>
-      )}
+        <Field
+          label="ת.ז. של השחקן"
+          ok={isValidIsraeliId(form.playerNationalId)}
+          showHint={form.playerNationalId.length >= 5}
+        >
+          <Input
+            name="playerNationalId"
+            inputMode="numeric"
+            className={inputClass}
+            value={form.playerNationalId}
+            onChange={set("playerNationalId")}
+            required
+          />
+        </Field>
+        <Field label="תאריך לידה">
+          <Input
+            name="birthDate"
+            type="date"
+            className={inputClass}
+            value={form.birthDate}
+            onChange={set("birthDate")}
+            required
+          />
+        </Field>
 
-      {showPayer && (
-        <div className="border-border flex flex-col gap-3 border-t pt-3">
+        {isMinor && (
+          <span className="bg-primary-50 text-primary-700 w-fit rounded-full px-3 py-1 text-xs">
+            שחקן קטין (גיל {age}) · נדרשים פרטי הורה
+          </span>
+        )}
+        {isAdult && (
+          <div className="border-primary-300/40 bg-primary-50 text-primary-700 flex items-start gap-2 rounded-lg border px-3 py-2 text-xs">
+            <Check className="mt-0.5 size-4 shrink-0" />
+            <span>
+              <span className="font-bold">אתה בוגר (גיל {age}).</span> הפרטים
+              שלמעלה הם שלך כשחקן — ואתה נרשם ומשלם על עצמך. נותר רק טלפון
+              ליצירת קשר.
+            </span>
+          </div>
+        )}
+      </div>
+
+      {age !== null && (
+        <div className="border-border flex flex-col gap-3 border-t pt-4">
+          <SectionHead icon={<Wallet className="size-4" />}>
+            {isMinor ? "פרטי ההורה / המשלם" : "פרטי התקשרות ותשלום"}
+          </SectionHead>
+
           {isMinor && (
             <>
-              <span className="text-text-muted text-xs font-medium">
-                פרטי ההורה / המשלם
-              </span>
               <div className="flex gap-2">
                 <Input
                   name="contactFirstName"
                   placeholder="שם פרטי"
                   autoComplete="given-name"
+                  className={inputClass}
                   value={form.contactFirstName}
                   onChange={set("contactFirstName")}
                   required
@@ -193,26 +249,26 @@ export function RegistrationForm({
                   name="contactLastName"
                   placeholder="שם משפחה"
                   autoComplete="family-name"
+                  className={inputClass}
                   value={form.contactLastName}
                   onChange={set("contactLastName")}
                 />
               </div>
-              <div className="flex flex-col gap-1">
+              <Field
+                label="ת.ז. של המשלם"
+                ok={isValidIsraeliId(form.contactNationalId)}
+                showHint={form.contactNationalId.length >= 5}
+              >
                 <Input
                   name="contactNationalId"
-                  placeholder="ת.ז. של המשלם"
                   inputMode="numeric"
+                  className={inputClass}
                   value={form.contactNationalId}
                   onChange={set("contactNationalId")}
                   required
                 />
-                <FieldHint
-                  ok={contactIdOk}
-                  show={form.contactNationalId.length >= 5}
-                />
-              </div>
-              <label className="text-text-muted flex flex-col gap-1 text-xs">
-                קרבה
+              </Field>
+              <Field label="קרבה">
                 <select
                   name="relationship"
                   value={form.relationship}
@@ -227,31 +283,37 @@ export function RegistrationForm({
                   <option value="mother">אמא</option>
                   <option value="guardian">אפוטרופוס</option>
                 </select>
-              </label>
+              </Field>
             </>
           )}
 
-          <div className="flex flex-col gap-1">
+          <Field
+            label="טלפון"
+            ok={normalizeIsraeliPhone(form.contactPhone) !== null}
+            showHint={form.contactPhone.length >= 9}
+          >
             <Input
               name="contactPhone"
               type="tel"
               inputMode="tel"
               autoComplete="tel"
-              placeholder="טלפון — למשל 050-1234567"
+              placeholder="050-1234567"
+              className={inputClass}
               value={form.contactPhone}
               onChange={set("contactPhone")}
               required
             />
-            <FieldHint ok={phoneOk} show={form.contactPhone.length >= 9} />
-          </div>
-          <Input
-            name="contactEmail"
-            type="email"
-            autoComplete="email"
-            placeholder="אימייל (אופציונלי)"
-            value={form.contactEmail}
-            onChange={set("contactEmail")}
-          />
+          </Field>
+          <Field label="אימייל (אופציונלי)">
+            <Input
+              name="contactEmail"
+              type="email"
+              autoComplete="email"
+              className={inputClass}
+              value={form.contactEmail}
+              onChange={set("contactEmail")}
+            />
+          </Field>
         </div>
       )}
 
@@ -262,10 +324,20 @@ export function RegistrationForm({
         {pending ? (
           <Spinner className="size-5" />
         ) : (
-          `המשך לתשלום · ${formatAgorot(feeAgorot, currency)}`
+          `המשך · ${formatAgorot(feeAgorot, currency)}`
         )}
       </Button>
     </form>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  if (!value) return null;
+  return (
+    <div className="flex justify-between gap-3 text-sm">
+      <span className="text-text-muted">{label}</span>
+      <span className="text-text-primary text-end font-medium">{value}</span>
+    </div>
   );
 }
 
@@ -273,12 +345,12 @@ function PaymentStep({
   registrationId,
   amountAgorot,
   currency,
-  playerName,
+  form,
 }: {
   registrationId: string;
   amountAgorot: number;
   currency: string;
-  playerName: string;
+  form: FormData;
 }) {
   const [state, formAction, pending] = useActionState(
     payRegistrationMockAction,
@@ -287,11 +359,11 @@ function PaymentStep({
 
   if (state.done) {
     return (
-      <div className="flex flex-col items-center gap-3 py-6 text-center">
-        <span className="bg-success-bg text-success-text flex size-14 items-center justify-center rounded-full text-2xl">
+      <div className="flex flex-col items-center gap-3 py-8 text-center">
+        <span className="bg-success-bg text-success-text flex size-16 items-center justify-center rounded-full text-3xl">
           ✓
         </span>
-        <h2 className="text-text-primary text-lg font-bold">נרשמת בהצלחה!</h2>
+        <h2 className="text-text-primary text-xl font-bold">נרשמת בהצלחה!</h2>
         <p className="text-text-muted text-sm">
           התשלום התקבל והרישום הושלם. נתראה במגרש 🏆
         </p>
@@ -299,30 +371,71 @@ function PaymentStep({
     );
   }
 
+  const age = calculateAge(form.birthDate);
+  const isMinor = age !== null && age < ADULT_AGE;
+  const playerName = `${form.playerFirstName} ${form.playerLastName}`.trim();
+  const payerName = isMinor
+    ? `${form.contactFirstName} ${form.contactLastName}`.trim()
+    : playerName;
+
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <Stepper step={2} />
+      <Progress step={2} />
       <input type="hidden" name="registrationId" value={registrationId} />
-      <div className="border-border bg-bg-surface flex flex-col gap-2 rounded-lg border p-4">
-        {playerName && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-text-muted">רישום עבור</span>
-            <span className="text-text-primary font-medium">{playerName}</span>
+
+      <div className="border-border bg-bg-surface flex flex-col gap-3 rounded-lg border p-4">
+        <SectionHead icon={<User className="size-4" />}>השחקן</SectionHead>
+        <div className="flex flex-col gap-1.5">
+          <SummaryRow label="שם" value={playerName} />
+          <SummaryRow label="ת.ז." value={form.playerNationalId} />
+          <SummaryRow
+            label="תאריך לידה"
+            value={
+              form.birthDate
+                ? `${new Date(form.birthDate).toLocaleDateString("he-IL")}${
+                    age !== null ? ` · גיל ${age}` : ""
+                  }`
+                : ""
+            }
+          />
+        </div>
+
+        <div className="border-border border-t pt-3">
+          <SectionHead icon={<Wallet className="size-4" />}>המשלם</SectionHead>
+          <div className="mt-2 flex flex-col gap-1.5">
+            <SummaryRow label="שם" value={payerName} />
+            <SummaryRow
+              label="ת.ז."
+              value={isMinor ? form.contactNationalId : form.playerNationalId}
+            />
+            {isMinor && (
+              <SummaryRow
+                label="קרבה"
+                value={REL_LABELS[form.relationship] ?? ""}
+              />
+            )}
+            <SummaryRow label="טלפון" value={form.contactPhone} />
+            <SummaryRow label="אימייל" value={form.contactEmail} />
           </div>
-        )}
-        <div className="flex items-center justify-between">
-          <span className="text-text-muted text-sm">סכום לתשלום</span>
-          <span className="text-text-primary text-xl font-bold">
-            {formatAgorot(amountAgorot, currency)}
-          </span>
         </div>
       </div>
+
+      <div className="border-primary-300/40 bg-primary-50 flex items-center justify-between rounded-lg border p-4">
+        <span className="text-primary-700 flex items-center gap-2 text-sm font-medium">
+          <CreditCard className="size-4" />
+          סכום לתשלום
+        </span>
+        <span className="text-primary-700 text-2xl font-bold">
+          {formatAgorot(amountAgorot, currency)}
+        </span>
+      </div>
+
       <p className="bg-warning-bg text-warning-text rounded-md px-3 py-2 text-xs">
         מצב בדיקה — התשלום מדומה (יוחלף בסליקת Tranzila).
       </p>
       {state.error && <p className="text-danger text-sm">{state.error}</p>}
       <Button type="submit" disabled={pending} className="h-12 text-base">
-        {pending ? <Spinner className="size-5" /> : "תשלום (סימולציה)"}
+        {pending ? <Spinner className="size-5" /> : "אישור ותשלום"}
       </Button>
     </form>
   );
