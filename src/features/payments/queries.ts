@@ -13,14 +13,24 @@ export async function getBillingSettings(): Promise<BillingSettings> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("billing_settings")
-    .select("vat_rate, currency")
+    .select("vat_rate, currency, registration_fee_agorot, registration_open")
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return DEFAULT_BILLING_SETTINGS;
 
   // numeric חוזר לעיתים כמחרוזת מ-supabase-js.
-  const row = data as { vat_rate: number | string; currency: string };
-  return { vat_rate: Number(row.vat_rate), currency: row.currency };
+  const row = data as {
+    vat_rate: number | string;
+    currency: string;
+    registration_fee_agorot: number | string;
+    registration_open: boolean;
+  };
+  return {
+    vat_rate: Number(row.vat_rate),
+    currency: row.currency,
+    registration_fee_agorot: Number(row.registration_fee_agorot),
+    registration_open: row.registration_open,
+  };
 }
 
 type NameRel =

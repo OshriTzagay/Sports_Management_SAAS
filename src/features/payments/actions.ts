@@ -13,6 +13,8 @@ const settingsSchema = z.object({
     .min(0, 'שיעור מע"מ לא תקין')
     .max(100, 'שיעור מע"מ לא תקין'),
   currency: z.string().trim().min(1),
+  registrationFee: z.coerce.number().min(0, "דמי רישום לא תקינים"),
+  registrationOpen: z.coerce.boolean(),
 });
 
 export type BillingSettingsState = { error: string | null; ok?: boolean };
@@ -27,6 +29,8 @@ export async function updateBillingSettingsAction(
   const parsed = settingsSchema.safeParse({
     vatRate: formData.get("vatRate"),
     currency: formData.get("currency"),
+    registrationFee: formData.get("registrationFee"),
+    registrationOpen: formData.get("registrationOpen") === "on",
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
@@ -38,6 +42,8 @@ export async function updateBillingSettingsAction(
       club_id: user.club_id,
       vat_rate: parsed.data.vatRate,
       currency: parsed.data.currency,
+      registration_fee_agorot: Math.round(parsed.data.registrationFee * 100),
+      registration_open: parsed.data.registrationOpen,
     },
     { onConflict: "club_id" },
   );

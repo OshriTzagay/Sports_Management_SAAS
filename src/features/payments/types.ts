@@ -3,11 +3,17 @@ export interface BillingSettings {
   /** שיעור מע"מ באחוזים (למשל 18). 0 = פטור (עמותה). */
   vat_rate: number;
   currency: string;
+  /** דמי רישום (agorot) לטופס ההרשמה הציבורי. */
+  registration_fee_agorot: number;
+  /** האם ההרשמה הציבורית פתוחה. */
+  registration_open: boolean;
 }
 
 export const DEFAULT_BILLING_SETTINGS: BillingSettings = {
   vat_rate: 0,
   currency: "ILS",
+  registration_fee_agorot: 0,
+  registration_open: false,
 };
 
 export const CURRENCY_LABELS: Record<string, string> = {

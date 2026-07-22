@@ -17,8 +17,10 @@ const selectClass =
 
 export function BillingSettingsForm({
   settings,
+  registrationUrl,
 }: {
   settings: BillingSettings;
+  registrationUrl?: string;
 }) {
   const [state, formAction, pending] = useActionState(
     updateBillingSettingsAction,
@@ -56,6 +58,39 @@ export function BillingSettingsForm({
           ))}
         </select>
       </label>
+      <div className="border-border flex flex-col gap-3 border-t pt-3">
+        <span className="text-text-primary text-xs font-medium">
+          הרשמה עצמית ציבורית
+        </span>
+        <label className="text-text-muted flex flex-col gap-1 text-xs">
+          דמי רישום (₪)
+          <Input
+            name="registrationFee"
+            type="number"
+            min={0}
+            step="0.01"
+            defaultValue={(settings.registration_fee_agorot / 100).toFixed(2)}
+            inputMode="decimal"
+          />
+        </label>
+        <label className="text-text-body flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="registrationOpen"
+            defaultChecked={settings.registration_open}
+            className="size-4"
+          />
+          הרשמה פתוחה (הקישור הציבורי פעיל)
+        </label>
+        {registrationUrl && (
+          <p className="text-text-muted text-[0.7rem] break-all">
+            קישור להרשמה:{" "}
+            <code className="bg-bg-muted rounded px-1 py-0.5">
+              {registrationUrl}
+            </code>
+          </p>
+        )}
+      </div>
       {state.error && <p className="text-danger text-sm">{state.error}</p>}
       {state.ok && <p className="text-success-text text-sm">נשמר ✓</p>}
       <Button
