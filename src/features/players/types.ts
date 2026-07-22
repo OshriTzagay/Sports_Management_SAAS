@@ -7,6 +7,8 @@ export interface Player {
   last_name: string;
   national_id: string | null;
   birth_date: string | null;
+  phone: string | null;
+  email: string | null;
   status: PlayerStatus;
   created_at: string;
 }

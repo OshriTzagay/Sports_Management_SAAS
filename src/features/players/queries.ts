@@ -9,7 +9,7 @@ export async function listPlayers(): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
     .select(
-      "id, club_id, first_name, last_name, national_id, birth_date, status, created_at",
+      "id, club_id, first_name, last_name, national_id, birth_date, phone, email, status, created_at",
     )
     .is("deleted_at", null)
     .order("last_name");
@@ -27,7 +27,7 @@ export async function listTeamRoster(
   const { data, error } = await supabase
     .from("team_players")
     .select(
-      "players(id, club_id, first_name, last_name, national_id, birth_date, status, created_at)",
+      "players(id, club_id, first_name, last_name, national_id, birth_date, phone, email, status, created_at)",
     )
     .eq("team_id", teamId)
     .eq("season_id", seasonId)

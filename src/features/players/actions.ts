@@ -18,6 +18,11 @@ const createSchema = z.object({
   lastName: z.string().trim().min(1, "שם משפחה נדרש"),
   nationalId: optionalText,
   birthDate: optionalText,
+  phone: optionalText,
+  email: z
+    .union([z.string().email("אימייל לא תקין"), z.literal("")])
+    .optional()
+    .transform((v) => (v ? v : null)),
 });
 
 export type CreatePlayerState = { error: string | null };
@@ -34,6 +39,8 @@ export async function createPlayerAction(
     lastName: formData.get("lastName"),
     nationalId: formData.get("nationalId"),
     birthDate: formData.get("birthDate"),
+    phone: formData.get("phone"),
+    email: formData.get("email"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
@@ -46,6 +53,8 @@ export async function createPlayerAction(
     last_name: parsed.data.lastName,
     national_id: parsed.data.nationalId,
     birth_date: parsed.data.birthDate,
+    phone: parsed.data.phone,
+    email: parsed.data.email,
   });
   if (error) {
     return { error: toUserMessage(error, "כבר קיים שחקן עם ת.ז. זו במועדון") };
@@ -108,6 +117,8 @@ export async function updatePlayerAction(
     lastName: formData.get("lastName"),
     nationalId: formData.get("nationalId"),
     birthDate: formData.get("birthDate"),
+    phone: formData.get("phone"),
+    email: formData.get("email"),
     status: formData.get("status"),
     seasonId: formData.get("seasonId"),
     teamId: formData.get("teamId"),
@@ -124,6 +135,8 @@ export async function updatePlayerAction(
       last_name: parsed.data.lastName,
       national_id: parsed.data.nationalId,
       birth_date: parsed.data.birthDate,
+      phone: parsed.data.phone,
+      email: parsed.data.email,
       status: parsed.data.status,
     })
     .eq("id", parsed.data.playerId);

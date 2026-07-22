@@ -21,6 +21,7 @@ const baseSchema = z.object({
     .union([z.string().email("אימייל לא תקין"), z.literal("")])
     .optional()
     .transform((v) => (v ? v : null)),
+  nationalId: optionalText,
 });
 
 export type ContactFormState = { error: string | null };
@@ -37,6 +38,7 @@ export async function createContactAction(
     lastName: formData.get("lastName"),
     phone: formData.get("phone"),
     email: formData.get("email"),
+    nationalId: formData.get("nationalId"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
@@ -49,6 +51,7 @@ export async function createContactAction(
     last_name: parsed.data.lastName,
     phone: parsed.data.phone,
     email: parsed.data.email,
+    national_id: parsed.data.nationalId,
   });
   if (error) return { error: error.message };
 
@@ -71,6 +74,7 @@ export async function updateContactAction(
     lastName: formData.get("lastName"),
     phone: formData.get("phone"),
     email: formData.get("email"),
+    nationalId: formData.get("nationalId"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
@@ -84,6 +88,7 @@ export async function updateContactAction(
       last_name: parsed.data.lastName,
       phone: parsed.data.phone,
       email: parsed.data.email,
+      national_id: parsed.data.nationalId,
     })
     .eq("id", parsed.data.contactId);
   if (error) return { error: error.message };

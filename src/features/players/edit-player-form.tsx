@@ -62,6 +62,20 @@ export function EditPlayerForm({
         aria-label="תאריך לידה"
         defaultValue={player.birth_date ?? ""}
       />
+      <div className="flex gap-2">
+        <Input
+          name="phone"
+          placeholder="טלפון"
+          defaultValue={player.phone ?? ""}
+          inputMode="tel"
+        />
+        <Input
+          name="email"
+          type="email"
+          placeholder="אימייל"
+          defaultValue={player.email ?? ""}
+        />
+      </div>
 
       <label className="text-text-muted flex flex-col gap-1 text-xs">
         סטטוס

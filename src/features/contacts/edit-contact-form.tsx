@@ -68,6 +68,12 @@ export function EditContactForm({
         placeholder="אימייל"
         defaultValue={contact.email ?? ""}
       />
+      <Input
+        name="nationalId"
+        placeholder="ת.ז."
+        defaultValue={contact.national_id ?? ""}
+        inputMode="numeric"
+      />
       {state.error && <p className="text-danger text-sm">{state.error}</p>}
       <div className="flex items-center justify-between">
         <Button type="submit" disabled={pending || deleting}>

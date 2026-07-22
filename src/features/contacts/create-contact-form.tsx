@@ -35,6 +35,11 @@ export function CreateContactForm() {
       </div>
       <Input name="phone" placeholder="טלפון" inputMode="tel" />
       <Input name="email" type="email" placeholder="אימייל" />
+      <Input
+        name="nationalId"
+        placeholder="ת.ז. (אופציונלי)"
+        inputMode="numeric"
+      />
       {state.error && <p className="text-danger text-sm">{state.error}</p>}
       <Button type="submit" disabled={pending}>
         {pending ? <Spinner className="size-4" /> : "איש קשר חדש"}

@@ -5,6 +5,7 @@ export interface Contact {
   last_name: string | null;
   phone: string | null;
   email: string | null;
+  national_id: string | null;
   created_at: string;
 }
 

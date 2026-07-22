@@ -39,6 +39,10 @@ export function CreatePlayerForm() {
         inputMode="numeric"
       />
       <Input name="birthDate" type="date" aria-label="תאריך לידה" />
+      <div className="flex gap-2">
+        <Input name="phone" placeholder="טלפון (אופציונלי)" inputMode="tel" />
+        <Input name="email" type="email" placeholder="אימייל (אופציונלי)" />
+      </div>
       {state.error && <p className="text-danger text-sm">{state.error}</p>}
       <Button type="submit" disabled={pending}>
         {pending ? <Spinner className="size-4" /> : "שחקן חדש"}

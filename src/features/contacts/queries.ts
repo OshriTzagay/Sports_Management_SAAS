@@ -38,7 +38,9 @@ export async function listContacts(): Promise<Contact[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("contacts")
-    .select("id, club_id, first_name, last_name, phone, email, created_at")
+    .select(
+      "id, club_id, first_name, last_name, phone, email, national_id, created_at",
+    )
     .is("deleted_at", null)
     .order("last_name", { nullsFirst: false })
     .order("first_name");
