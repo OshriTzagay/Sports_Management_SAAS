@@ -20,6 +20,19 @@ const payInitial: PayState = { error: null };
 const selectClass =
   "h-10 w-full rounded-md border border-border bg-bg-surface px-3 text-sm text-text-primary";
 
+const EMPTY = {
+  playerFirstName: "",
+  playerLastName: "",
+  playerNationalId: "",
+  birthDate: "",
+  contactFirstName: "",
+  contactLastName: "",
+  contactNationalId: "",
+  relationship: "",
+  contactPhone: "",
+  contactEmail: "",
+};
+
 export function RegistrationForm({
   slug,
   feeAgorot,
@@ -33,7 +46,12 @@ export function RegistrationForm({
     submitRegistrationAction,
     submitInitial,
   );
-  const [birthDate, setBirthDate] = useState("");
+  // controlled — כדי שהערכים ישרדו את איפוס-הטופס האוטומטי של React 19 בשגיאה.
+  const [form, setForm] = useState(EMPTY);
+  const set =
+    (key: keyof typeof EMPTY) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setForm((f) => ({ ...f, [key]: e.target.value }));
 
   if (state.status === "created") {
     return (
@@ -45,7 +63,7 @@ export function RegistrationForm({
     );
   }
 
-  const age = calculateAge(birthDate);
+  const age = calculateAge(form.birthDate);
   const isMinor = age !== null && age < ADULT_AGE;
   const showPayer = age !== null;
 
@@ -55,13 +73,27 @@ export function RegistrationForm({
 
       <span className="text-text-muted text-xs font-medium">פרטי השחקן</span>
       <div className="flex gap-2">
-        <Input name="playerFirstName" placeholder="שם פרטי" required />
-        <Input name="playerLastName" placeholder="שם משפחה" required />
+        <Input
+          name="playerFirstName"
+          placeholder="שם פרטי"
+          value={form.playerFirstName}
+          onChange={set("playerFirstName")}
+          required
+        />
+        <Input
+          name="playerLastName"
+          placeholder="שם משפחה"
+          value={form.playerLastName}
+          onChange={set("playerLastName")}
+          required
+        />
       </div>
       <Input
         name="playerNationalId"
         placeholder="ת.ז. של השחקן"
         inputMode="numeric"
+        value={form.playerNationalId}
+        onChange={set("playerNationalId")}
         required
       />
       <label className="text-text-muted flex flex-col gap-1 text-xs">
@@ -69,8 +101,8 @@ export function RegistrationForm({
         <Input
           name="birthDate"
           type="date"
-          value={birthDate}
-          onChange={(e) => setBirthDate(e.target.value)}
+          value={form.birthDate}
+          onChange={set("birthDate")}
           required
         />
       </label>
@@ -84,20 +116,34 @@ export function RegistrationForm({
           {isMinor && (
             <>
               <div className="flex gap-2">
-                <Input name="contactFirstName" placeholder="שם פרטי" required />
-                <Input name="contactLastName" placeholder="שם משפחה" />
+                <Input
+                  name="contactFirstName"
+                  placeholder="שם פרטי"
+                  value={form.contactFirstName}
+                  onChange={set("contactFirstName")}
+                  required
+                />
+                <Input
+                  name="contactLastName"
+                  placeholder="שם משפחה"
+                  value={form.contactLastName}
+                  onChange={set("contactLastName")}
+                />
               </div>
               <Input
                 name="contactNationalId"
                 placeholder="ת.ז. של המשלם"
                 inputMode="numeric"
+                value={form.contactNationalId}
+                onChange={set("contactNationalId")}
                 required
               />
               <label className="text-text-muted flex flex-col gap-1 text-xs">
                 קרבה
                 <select
                   name="relationship"
-                  defaultValue=""
+                  value={form.relationship}
+                  onChange={set("relationship")}
                   className={selectClass}
                   required
                 >
@@ -123,12 +169,16 @@ export function RegistrationForm({
             type="tel"
             inputMode="tel"
             placeholder="טלפון — למשל 050-1234567"
+            value={form.contactPhone}
+            onChange={set("contactPhone")}
             required
           />
           <Input
             name="contactEmail"
             type="email"
             placeholder="אימייל (אופציונלי)"
+            value={form.contactEmail}
+            onChange={set("contactEmail")}
           />
         </div>
       )}
