@@ -6,6 +6,7 @@ import { listTeams } from "@/features/teams";
 import { listPlayers, listSeasonAssignments } from "@/features/players";
 import { listContacts, listPlayerContacts } from "@/features/contacts";
 import type { PlayerContactLink } from "@/features/contacts";
+import { listCharges } from "@/features/payments";
 import { PlayerList } from "@/features/players/player-list";
 import { CreatePlayerForm } from "@/features/players/create-player-form";
 
@@ -18,6 +19,23 @@ export default async function PlayersPage() {
     listContacts(),
     listPlayerContacts(),
   ]);
+
+  // מצב תשלום פר-שחקן (רק למי שרשאי לצפות בתשלומים).
+  const payStatusByPlayer: Record<string, "paid" | "owes"> = {};
+  if (perms.has("payments.view")) {
+    for (const c of await listCharges()) {
+      if (c.status === "cancelled") continue;
+      const open =
+        c.status === "pending" ||
+        c.status === "partially_paid" ||
+        c.status === "failed";
+      if (open && c.amount_agorot - c.paid_agorot > 0) {
+        payStatusByPlayer[c.player_id] = "owes";
+      } else if (payStatusByPlayer[c.player_id] !== "owes") {
+        payStatusByPlayer[c.player_id] = "paid";
+      }
+    }
+  }
 
   const canManage = perms.has("players.manage");
   const readOnly = (season ? !season.is_active : false) || !canManage;
@@ -72,6 +90,7 @@ export default async function PlayersPage() {
         teamByPlayer={teamByPlayer}
         contacts={contacts}
         contactsByPlayer={contactsByPlayer}
+        payStatusByPlayer={payStatusByPlayer}
         readOnly={readOnly}
       />
     </div>

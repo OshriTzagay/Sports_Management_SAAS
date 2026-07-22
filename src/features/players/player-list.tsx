@@ -29,6 +29,7 @@ interface PlayerListProps {
   teamByPlayer: Record<string, string>;
   contacts: Contact[];
   contactsByPlayer: Record<string, PlayerContactLink[]>;
+  payStatusByPlayer: Record<string, "paid" | "owes">;
   readOnly?: boolean;
 }
 
@@ -39,6 +40,7 @@ export function PlayerList({
   teamByPlayer,
   contacts,
   contactsByPlayer,
+  payStatusByPlayer,
   readOnly = false,
 }: PlayerListProps) {
   const [selected, setSelected] = useState<Player | null>(null);
@@ -98,6 +100,27 @@ export function PlayerList({
       cell: (p) => <span className="text-text-muted">{teamOf(p) || "—"}</span>,
       sortValue: (p) => teamOf(p),
       filter: { label: "קבוצה", value: (p) => teamOf(p) },
+    },
+    {
+      key: "payment",
+      header: "תשלום",
+      cell: (p) => {
+        const s = payStatusByPlayer[p.id];
+        if (!s) return <span className="text-text-muted">—</span>;
+        return (
+          <Badge variant={s === "owes" ? "danger" : "success"}>
+            {s === "owes" ? "חוב" : "שולם"}
+          </Badge>
+        );
+      },
+      sortValue: (p) => payStatusByPlayer[p.id] ?? "",
+      filter: {
+        label: "תשלום",
+        value: (p) => {
+          const s = payStatusByPlayer[p.id];
+          return s === "owes" ? "חוב" : s === "paid" ? "שולם" : "";
+        },
+      },
     },
     {
       key: "status",

@@ -5,8 +5,10 @@ import { requireUser, getUserPermissions } from "@/features/tenant-auth";
 import { listPlayers } from "@/features/players";
 import { listPlayerContacts } from "@/features/contacts";
 import { listCharges } from "@/features/payments";
+import { listRegistrations } from "@/features/registrations";
 import { ChargeList } from "@/features/payments/charge-list";
 import { CreateChargeForm } from "@/features/payments/create-charge-form";
+import { RegistrationsTable } from "@/features/registrations/registrations-table";
 
 export default async function PaymentsPage() {
   const user = await requireUser();
@@ -14,10 +16,11 @@ export default async function PaymentsPage() {
   if (!perms.has("payments.view")) notFound();
 
   const canManage = perms.has("payments.charge");
-  const [charges, players, contactLinks] = await Promise.all([
+  const [charges, players, contactLinks, registrations] = await Promise.all([
     listCharges(),
     listPlayers(),
     listPlayerContacts(),
+    listRegistrations(),
   ]);
 
   // שחקנים שיש להם איש קשר לחיוב (לצורך אזהרה ביצירת חיוב).
@@ -43,6 +46,15 @@ export default async function PaymentsPage() {
         )}
       </div>
       <ChargeList charges={charges} canManage={canManage} />
+
+      {registrations.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h2 className="text-text-primary text-sm font-bold">
+            הרשמות עצמיות ({registrations.length})
+          </h2>
+          <RegistrationsTable rows={registrations} />
+        </section>
+      )}
     </div>
   );
 }
