@@ -178,24 +178,3 @@ dialog[open] {
 dialog::backdrop {
   transition: opacity 0.2s ease;
 }
-
-/* Top navigation progress bar — fills across the screen while a route loads.
-   Anchored to the inline-start (right, in RTL); trickles toward ~90% and holds. */
-@keyframes route-progress {
-  0% {
-    transform: scaleX(0);
-  }
-  35% {
-    transform: scaleX(0.5);
-  }
-  70% {
-    transform: scaleX(0.75);
-  }
-  100% {
-    transform: scaleX(0.92);
-  }
-}
-.animate-route-progress {
-  transform-origin: right center;
-  animation: route-progress 8s cubic-bezier(0.1, 0.7, 0.6, 1) forwards;
-}
