@@ -178,3 +178,16 @@ dialog[open] {
 dialog::backdrop {
   transition: opacity 0.2s ease;
 }
+
+/* Top navigation progress bar — immediate feedback while a route loads. */
+@keyframes route-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+.animate-route-progress {
+  animation: route-progress 1s ease-in-out infinite;
+}

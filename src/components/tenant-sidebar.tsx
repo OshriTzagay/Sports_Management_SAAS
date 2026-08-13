@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
+import { TopLoadingBar } from "@/components/ui/top-loading-bar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SeasonSwitcher } from "@/components/season-switcher";
 import { signOutTenant } from "@/features/tenant-auth/actions";
@@ -53,6 +55,33 @@ const NAV: NavItem[] = [
 
 function isActive(pathname: string, href: string): boolean {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
+
+/**
+ * תוכן פריט הניווט — נמצא בתוך <Link> כדי לקרוא useLinkStatus.
+ * בזמן שהניווט בתהליך: האייקון מוחלף בספינר + מוצג פס התקדמות עליון.
+ */
+function NavItemBody({
+  icon: Icon,
+  label,
+  collapsed,
+}: {
+  icon: LucideIcon;
+  label: string;
+  collapsed: boolean;
+}) {
+  const { pending } = useLinkStatus();
+  return (
+    <>
+      {pending ? (
+        <Spinner className="size-4 shrink-0" />
+      ) : (
+        <Icon className="size-4 shrink-0" />
+      )}
+      {!collapsed && label}
+      {pending && <TopLoadingBar />}
+    </>
+  );
 }
 
 export function TenantSidebar({
@@ -145,7 +174,6 @@ export function TenantSidebar({
       <nav className="flex flex-1 flex-col gap-1 p-2">
         {navItems.map((item) => {
           const active = isActive(pathname, item.href);
-          const Icon = item.icon;
           return (
             <Link
               key={item.href}
@@ -159,8 +187,11 @@ export function TenantSidebar({
                   : "text-text-body hover:bg-bg-muted",
               )}
             >
-              <Icon className="size-4 shrink-0" />
-              {!collapsed && item.label}
+              <NavItemBody
+                icon={item.icon}
+                label={item.label}
+                collapsed={collapsed}
+              />
             </Link>
           );
         })}
