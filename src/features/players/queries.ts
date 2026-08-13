@@ -3,6 +3,22 @@ import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Player } from "./types";
 
+const PLAYER_COLUMNS =
+  "id, club_id, first_name, last_name, national_id, birth_date, phone, email, status, created_at";
+
+/** שחקן בודד לפי מזהה (זהות). RLS מסנן ל-club_id. null אם לא נמצא. */
+export async function getPlayer(id: string): Promise<Player | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("players")
+    .select(PLAYER_COLUMNS)
+    .eq("id", id)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as Player | null) ?? null;
+}
+
 /** כל שחקני המועדון (זהות — לא תלוי עונה). RLS מסנן ל-club_id. */
 export async function listPlayers(): Promise<Player[]> {
   const supabase = await createServerSupabaseClient();

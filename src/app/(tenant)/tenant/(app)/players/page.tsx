@@ -4,7 +4,7 @@ import { getCurrentPermissions } from "@/features/tenant-auth";
 import { getSelectedSeason } from "@/features/seasons";
 import { listTeams } from "@/features/teams";
 import { listPlayers, listSeasonAssignments } from "@/features/players";
-import { listContacts, listPlayerContacts } from "@/features/contacts";
+import { listPlayerContacts } from "@/features/contacts";
 import type { PlayerContactLink } from "@/features/contacts";
 import { listCharges } from "@/features/payments";
 import { PlayerList } from "@/features/players/player-list";
@@ -13,10 +13,9 @@ import { CreatePlayerForm } from "@/features/players/create-player-form";
 export default async function PlayersPage() {
   const perms = await getCurrentPermissions();
 
-  const [season, players, contacts, contactLinks] = await Promise.all([
+  const [season, players, contactLinks] = await Promise.all([
     getSelectedSeason(),
     listPlayers(),
-    listContacts(),
     listPlayerContacts(),
   ]);
 
@@ -85,13 +84,10 @@ export default async function PlayersPage() {
 
       <PlayerList
         players={players}
-        seasonId={readOnly ? null : (season?.id ?? null)}
         teams={teams}
         teamByPlayer={teamByPlayer}
-        contacts={contacts}
         contactsByPlayer={contactsByPlayer}
         payStatusByPlayer={payStatusByPlayer}
-        readOnly={readOnly}
       />
     </div>
   );
