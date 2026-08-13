@@ -9,24 +9,40 @@ import { Spinner } from "@/components/ui/spinner";
 import { useDialogClose } from "@/components/ui/form-dialog";
 import type { Player } from "@/features/players/types";
 import { createChargeAction, type CreateChargeState } from "./actions";
+import { PRODUCT_CATEGORY_LABELS, type Product } from "./types";
 
 const initialState: CreateChargeState = { error: null };
 
 export function CreateChargeForm({
   players,
   playersWithBilling,
+  products,
 }: {
   players: Player[];
   playersWithBilling: string[];
+  products: Product[];
 }) {
   const [state, formAction, pending] = useActionState(
     createChargeAction,
     initialState,
   );
   const [playerId, setPlayerId] = useState("");
+  const [productId, setProductId] = useState("");
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
   const [discount, setDiscount] = useState("");
   const close = useDialogClose();
   const wasPending = useRef(false);
+
+  const selectProduct = (id: string) => {
+    setProductId(id);
+    const product = products.find((p) => p.id === id);
+    if (!product) return;
+    setDescription(product.name);
+    setAmount(
+      product.variable_amount ? "" : (product.amount_agorot / 100).toFixed(2),
+    );
+  };
 
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) close();
@@ -58,9 +74,26 @@ export function CreateChargeForm({
           תשלום עד שתגדיר איש קשר ״משלם״ בכרטיס השחקן.
         </p>
       )}
+      {products.length > 0 && (
+        <label className="text-text-muted flex flex-col gap-1 text-xs">
+          מוצר מהקטלוג (אופציונלי)
+          <SearchableSelect
+            value={productId}
+            onChange={selectProduct}
+            options={products.map((p) => ({
+              value: p.id,
+              label: `${p.name} · ${PRODUCT_CATEGORY_LABELS[p.category]}`,
+            }))}
+            placeholder="בחירת מוצר…"
+            searchPlaceholder="חיפוש מוצר…"
+          />
+        </label>
+      )}
       <Input
         name="description"
         placeholder="תיאור — למשל דמי רישום 2026/27"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
         required
       />
       <div className="flex gap-2">
@@ -72,6 +105,8 @@ export function CreateChargeForm({
             min={0}
             step="0.01"
             inputMode="decimal"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
             required
           />
         </label>

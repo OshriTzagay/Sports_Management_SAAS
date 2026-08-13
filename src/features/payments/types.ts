@@ -22,6 +22,34 @@ export const CURRENCY_LABELS: Record<string, string> = {
   EUR: "€ אירו",
 };
 
+export type ProductCategory =
+  | "registration"
+  | "clothing"
+  | "membership"
+  | "donation"
+  | "book"
+  | "other";
+
+export const PRODUCT_CATEGORY_LABELS: Record<ProductCategory, string> = {
+  registration: "רישום",
+  clothing: "ביגוד",
+  membership: "מנוי שנתי",
+  donation: "תרומה",
+  book: "ספר",
+  other: "אחר",
+};
+
+/** פריט חיוב (מוצר) בקטלוג. */
+export interface Product {
+  id: string;
+  name: string;
+  category: ProductCategory;
+  amount_agorot: number;
+  currency: string;
+  variable_amount: boolean;
+  is_active: boolean;
+}
+
 export type ChargeStatus =
   | "pending"
   | "partially_paid"

@@ -6,7 +6,25 @@ import {
   type BillingSettings,
   type Charge,
   type ChargeStatus,
+  type Product,
 } from "./types";
+
+/** קטלוג המוצרים של המועדון (פעילים ולא-פעילים). */
+export async function listProducts(): Promise<Product[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("payment_plans")
+    .select(
+      "id, name, category, amount_agorot, currency, variable_amount, is_active",
+    )
+    .is("deleted_at", null)
+    .order("category")
+    .order("name");
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as (Product & { amount_agorot: number | string })[]).map(
+    (p) => ({ ...p, amount_agorot: Number(p.amount_agorot) }),
+  );
+}
 
 /** הגדרות החיוב של המועדון; ברירת מחדל (0% / ILS) אם טרם הוגדרו. */
 export async function getBillingSettings(): Promise<BillingSettings> {

@@ -4,10 +4,12 @@ import { FormDialog } from "@/components/ui/form-dialog";
 import { requireUser, getUserPermissions } from "@/features/tenant-auth";
 import { listPlayers } from "@/features/players";
 import { listPlayerContacts } from "@/features/contacts";
-import { listCharges } from "@/features/payments";
+import { listCharges, listProducts } from "@/features/payments";
 import { listRegistrations } from "@/features/registrations";
 import { ChargeList } from "@/features/payments/charge-list";
 import { CreateChargeForm } from "@/features/payments/create-charge-form";
+import { ProductList } from "@/features/payments/product-list";
+import { CreateProductForm } from "@/features/payments/product-form";
 import { RegistrationsTable } from "@/features/registrations/registrations-table";
 
 export default async function PaymentsPage() {
@@ -16,12 +18,14 @@ export default async function PaymentsPage() {
   if (!perms.has("payments.view")) notFound();
 
   const canManage = perms.has("payments.charge");
-  const [charges, players, contactLinks, registrations] = await Promise.all([
-    listCharges(),
-    listPlayers(),
-    listPlayerContacts(),
-    listRegistrations(),
-  ]);
+  const [charges, players, contactLinks, registrations, products] =
+    await Promise.all([
+      listCharges(),
+      listPlayers(),
+      listPlayerContacts(),
+      listRegistrations(),
+      listProducts(),
+    ]);
 
   // שחקנים שיש להם איש קשר לחיוב (לצורך אזהרה ביצירת חיוב).
   const playersWithBilling = [
@@ -41,11 +45,26 @@ export default async function PaymentsPage() {
             <CreateChargeForm
               players={players}
               playersWithBilling={playersWithBilling}
+              products={products.filter((p) => p.is_active)}
             />
           </FormDialog>
         )}
       </div>
       <ChargeList charges={charges} canManage={canManage} />
+
+      {canManage && (
+        <section className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-text-primary text-sm font-bold">
+              מוצרים / פריטי חיוב
+            </h2>
+            <FormDialog triggerLabel="+ מוצר" title="מוצר חדש">
+              <CreateProductForm />
+            </FormDialog>
+          </div>
+          <ProductList products={products} />
+        </section>
+      )}
 
       {registrations.length > 0 && (
         <section className="flex flex-col gap-2">

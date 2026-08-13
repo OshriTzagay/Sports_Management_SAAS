@@ -60,6 +60,107 @@ function toAgorot(shekels: number): number {
   return Math.round(shekels * 100);
 }
 
+const productSchema = z.object({
+  name: z.string().trim().min(1, "שם נדרש"),
+  category: z.enum([
+    "registration",
+    "clothing",
+    "membership",
+    "donation",
+    "book",
+    "other",
+  ]),
+  amount: z.coerce.number().min(0, "סכום לא תקין"),
+  variableAmount: z.coerce.boolean(),
+  isActive: z.coerce.boolean(),
+});
+
+export type ProductState = { error: string | null };
+
+/** יצירת מוצר (payments.charge). */
+export async function createProductAction(
+  _prev: ProductState,
+  formData: FormData,
+): Promise<ProductState> {
+  const user = await requirePermission("payments.charge");
+  const parsed = productSchema.safeParse({
+    name: formData.get("name"),
+    category: formData.get("category"),
+    amount: formData.get("amount"),
+    variableAmount: formData.get("variableAmount") === "on",
+    isActive: formData.get("isActive") !== null,
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.from("payment_plans").insert({
+    club_id: user.club_id,
+    name: parsed.data.name,
+    category: parsed.data.category,
+    amount_agorot: parsed.data.variableAmount
+      ? 0
+      : toAgorot(parsed.data.amount),
+    variable_amount: parsed.data.variableAmount,
+    is_active: parsed.data.isActive,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/tenant", "layout");
+  return { error: null };
+}
+
+/** עדכון מוצר. */
+export async function updateProductAction(
+  _prev: ProductState,
+  formData: FormData,
+): Promise<ProductState> {
+  await requirePermission("payments.charge");
+  const productId = z.string().uuid().parse(formData.get("productId"));
+  const parsed = productSchema.safeParse({
+    name: formData.get("name"),
+    category: formData.get("category"),
+    amount: formData.get("amount"),
+    variableAmount: formData.get("variableAmount") === "on",
+    isActive: formData.get("isActive") !== null,
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "קלט לא תקין" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("payment_plans")
+    .update({
+      name: parsed.data.name,
+      category: parsed.data.category,
+      amount_agorot: parsed.data.variableAmount
+        ? 0
+        : toAgorot(parsed.data.amount),
+      variable_amount: parsed.data.variableAmount,
+      is_active: parsed.data.isActive,
+    })
+    .eq("id", productId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/tenant", "layout");
+  return { error: null };
+}
+
+/** מחיקת מוצר (soft-delete). */
+export async function deleteProductAction(formData: FormData): Promise<void> {
+  await requirePermission("payments.charge");
+  const productId = z.string().uuid().parse(formData.get("productId"));
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("payment_plans")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", productId);
+  if (error) throw new Error(error.message);
+  revalidatePath("/tenant", "layout");
+}
+
 const moneyField = z.coerce.number().min(0, "סכום לא תקין");
 const optionalText = z
   .string()
