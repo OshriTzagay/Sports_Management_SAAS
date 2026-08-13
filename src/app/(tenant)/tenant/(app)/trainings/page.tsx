@@ -9,10 +9,12 @@ import {
   getMyCoachId,
   listCoachTeams,
   listTrainingsForCoach,
+  listCoachAttendanceSummary,
   TRAINING_STATUS_LABELS,
   type TrainingSession,
 } from "@/features/trainings";
 import { CreateTrainingForm } from "@/features/trainings/create-training-form";
+import { AttendanceSummary } from "@/features/trainings/attendance-summary";
 
 const STATUS_VARIANT: Record<
   TrainingSession["status"],
@@ -69,9 +71,10 @@ async function TrainingsContent({
     return <p className="text-text-muted text-sm">אין עונה פעילה.</p>;
   }
 
-  const [teams, trainings] = await Promise.all([
+  const [teams, trainings, attendance] = await Promise.all([
     listCoachTeams(coachId, season.id),
     listTrainingsForCoach(coachId, season.id),
+    listCoachAttendanceSummary(coachId, season.id),
   ]);
 
   return (
@@ -126,6 +129,13 @@ async function TrainingsContent({
             </li>
           ))}
         </ul>
+      )}
+
+      {attendance.length > 0 && (
+        <section className="flex flex-col gap-2 pt-2">
+          <h2 className="text-text-primary text-sm font-bold">נוכחות שחקנים</h2>
+          <AttendanceSummary rows={attendance} />
+        </section>
       )}
     </div>
   );

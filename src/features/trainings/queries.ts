@@ -6,6 +6,7 @@ import type {
   AttendanceRow,
   AttendanceStatus,
   CoachTeam,
+  PlayerAttendance,
   TrainingSession,
   TrainingStatus,
 } from "./types";
@@ -199,6 +200,61 @@ export async function getTraining(
     (data as unknown as RawSession).season_id,
   );
   return session ?? null;
+}
+
+/** סיכום נוכחות פר-שחקן על פני אימוני המאמן בעונה (הגיע/נעדר/סה"כ). */
+export async function listCoachAttendanceSummary(
+  coachId: string,
+  seasonId: string,
+): Promise<PlayerAttendance[]> {
+  const supabase = await createServerSupabaseClient();
+
+  const { data: sessions } = await supabase
+    .from("training_sessions")
+    .select("id")
+    .eq("coach_id", coachId)
+    .eq("season_id", seasonId)
+    .in("status", ["in_progress", "completed"])
+    .is("deleted_at", null);
+  const sessionIds = ((sessions ?? []) as { id: string }[]).map((s) => s.id);
+  if (sessionIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("training_attendance")
+    .select("player_id, status, players(first_name, last_name)")
+    .in("training_session_id", sessionIds);
+  if (error) throw new Error(error.message);
+
+  type RawAtt = {
+    player_id: string;
+    status: AttendanceStatus;
+    players:
+      | { first_name: string; last_name: string }
+      | { first_name: string; last_name: string }[]
+      | null;
+  };
+  const byPlayer = new Map<string, PlayerAttendance>();
+  for (const a of (data ?? []) as unknown as RawAtt[]) {
+    const p = Array.isArray(a.players) ? a.players[0] : a.players;
+    const name = `${p?.first_name ?? ""} ${p?.last_name ?? ""}`.trim();
+    const entry =
+      byPlayer.get(a.player_id) ??
+      ({
+        player_id: a.player_id,
+        name,
+        present: 0,
+        absent: 0,
+        total: 0,
+      } as PlayerAttendance);
+    if (a.status === "present") entry.present += 1;
+    else entry.absent += 1;
+    entry.total += 1;
+    byPlayer.set(a.player_id, entry);
+  }
+
+  return [...byPlayer.values()].sort((a, b) =>
+    a.name.localeCompare(b.name, "he"),
+  );
 }
 
 /** נוכחות לאימון (שורות שנוצרו בהתחלה), ממוינת לפי שם. */

@@ -43,3 +43,15 @@ export interface CoachTeam {
   team_id: string;
   team_name: string;
 }
+
+/** סיכום נוכחות של שחקן לעונה (על פני אימוני המאמן). */
+export interface PlayerAttendance {
+  player_id: string;
+  name: string;
+  present: number;
+  absent: number;
+  total: number;
+}
+
+/** מעל כמות ההיעדרויות הזו מסמנים התראה. */
+export const ABSENCE_ALERT_THRESHOLD = 2;
